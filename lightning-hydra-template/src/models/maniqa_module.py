@@ -96,8 +96,6 @@ class ManiqaModule(LightningModule):
         # so it's worth to make sure validation metrics don't store results from these checks
         self.val_loss.reset()
 
-
-
     def model_step(
         self, batch: Tuple[torch.Tensor, torch.Tensor]
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
@@ -110,7 +108,7 @@ class ManiqaModule(LightningModule):
             - A tensor of predictions.
             - A tensor of target labels.
         """
-        img, score = batch['d_img_org'], batch['score'].squeeze()
+        img, score = batch["d_img_org"], batch["score"].squeeze()
         pred = self.forward(img)
         pred = self.sig(pred)
         loss = self.criterion(pred, score)
@@ -131,27 +129,49 @@ class ManiqaModule(LightningModule):
         labels_batch_numpy = score.data.cpu().numpy()
         self.train_pred_epoch = np.append(self.train_pred_epoch, pred_batch_numpy)
         self.train_labels_epoch = np.append(self.train_labels_epoch, labels_batch_numpy)
-    
+
         # update and log metrics
         self.train_loss(loss)
-        self.log("train/loss", self.train_loss, on_step=True, on_epoch=False, prog_bar=True)
+        self.log(
+            "train/loss", self.train_loss, on_step=True, on_epoch=False, prog_bar=True
+        )
 
         # return loss or backpropagation will fail
         return loss
 
     def on_train_epoch_end(self) -> None:
         "Lightning hook that is called when a training epoch ends."
-        
-        rho_s, _ = spearmanr(np.squeeze(self.train_pred_epoch), np.squeeze(self.train_labels_epoch))
-        rho_p, _ = pearsonr(np.squeeze(self.train_pred_epoch), np.squeeze(self.train_labels_epoch))
-        self.log("train/PLCC", rho_s, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
-        self.log("train/SRCC", rho_p, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
+
+        rho_s, _ = spearmanr(
+            np.squeeze(self.train_pred_epoch), np.squeeze(self.train_labels_epoch)
+        )
+        rho_p, _ = pearsonr(
+            np.squeeze(self.train_pred_epoch), np.squeeze(self.train_labels_epoch)
+        )
+        self.log(
+            "train/PLCC",
+            rho_s,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+            sync_dist=True,
+        )
+        self.log(
+            "train/SRCC",
+            rho_p,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+            sync_dist=True,
+        )
 
         self.train_pred_epoch = []
         self.train_labels_epoch = []
         self.train_loss.reset()
 
-    def validation_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
+    def validation_step(
+        self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int
+    ) -> None:
         """Perform a single validation step on a batch of data from the validation set.
 
         :param batch: A batch of data (a tuple) containing the input tensor of images and target
@@ -166,20 +186,37 @@ class ManiqaModule(LightningModule):
 
         # update and log metrics
         self.val_loss(loss)
-        self.log("val/loss", self.val_loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
-
-
+        self.log(
+            "val/loss",
+            self.val_loss,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+            sync_dist=True,
+        )
 
     def on_validation_epoch_end(self) -> None:
         "Lightning hook that is called when a validation epoch ends."
-        rho_s, _ = spearmanr(np.squeeze(self.val_pred_epoch), np.squeeze(self.val_labels_epoch))
-        rho_p, _ = pearsonr(np.squeeze(self.val_pred_epoch), np.squeeze(self.val_labels_epoch))
-        self.log("val/metric", rho_s+rho_p, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
+        rho_s, _ = spearmanr(
+            np.squeeze(self.val_pred_epoch), np.squeeze(self.val_labels_epoch)
+        )
+        rho_p, _ = pearsonr(
+            np.squeeze(self.val_pred_epoch), np.squeeze(self.val_labels_epoch)
+        )
+        self.log(
+            "val/metric",
+            rho_s + rho_p,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+            sync_dist=True,
+        )
         self.val_pred_epoch = []
         self.val_labels_epoch = []
 
-
-    def test_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
+    def test_step(
+        self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int
+    ) -> None:
         """Perform a single test step on a batch of data from the test set.
 
         :param batch: A batch of data (a tuple) containing the input tensor of images and target
@@ -190,21 +227,21 @@ class ManiqaModule(LightningModule):
         pred = self.forward(img)
 
         for mos in pred:
-            self.mos_ls.append(round(mos,11))
-    
+            self.mos_ls.append(round(mos, 11))
+
         for name in img_name:
             self.image_name_ls.append(name)
 
         for _ in range(len(img_name)):
-            self.comments_ls.append('Nice image')
+            self.comments_ls.append("Nice image")
 
     def on_test_epoch_end(self) -> None:
         """Lightning hook that is called when a test epoch ends."""
-        
-        submit_df = pd.DataFrame(self.image_name_ls, columns=['img_name'])
-        submit_df.insert(1, 'mos', self.mos_ls)
-        submit_df.insert(2, 'comments', self.comments_ls)
-        submit_df.to_csv('/root/dacon/data/submit_maniqa.csv', mode='w', index=False)
+
+        submit_df = pd.DataFrame(self.image_name_ls, columns=["img_name"])
+        submit_df.insert(1, "mos", self.mos_ls)
+        submit_df.insert(2, "comments", self.comments_ls)
+        submit_df.to_csv("/root/dacon/data/submit_maniqa.csv", mode="w", index=False)
 
     def setup(self, stage: str) -> None:
         """Lightning hook that is called at the beginning of fit (train + validate), validate,
