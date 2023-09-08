@@ -2,7 +2,7 @@ import pandas as pd
 import random
 
 
-df = pd.read_csv('/root/dacon/data/submit_maniqa.csv')
+df = pd.read_csv('/root/dacon/data/submit_maniqa.csv' )
 # print(df)
 # print(df.head())
 # print(df.tail())
