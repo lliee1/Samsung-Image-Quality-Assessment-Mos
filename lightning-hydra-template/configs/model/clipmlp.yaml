@@ -1,0 +1,23 @@
+_target_: src.models.clipmlp_module.clipmlpModule
+
+optimizer:
+  _target_: torch.optim.Adam
+  _partial_: true
+  lr: 1e-3
+  weight_decay: 1e-5
+
+scheduler:
+  _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+  _partial_: true
+  T_max: 20
+  eta_min: 0
+
+
+net:
+  _target_: src.models.components.clip_mlp.clip_mlp
+  vis_dim: 512
+  device: "cuda"
+  
+
+# compile model for faster training with pytorch 2.0
+compile: false

@@ -1,0 +1,18 @@
+# @package _global_
+
+defaults:
+  - _self_
+  - data: maniqa # choose datamodule with `test_dataloader()` for evaluation
+  - model: maniqa
+  - logger: null
+  - trainer: gpu
+  - paths: default
+  - extras: default
+  - hydra: default
+
+task_name: "eval"
+
+tags: ["dev"]
+
+# passing checkpoint path is necessary for evaluation
+ckpt_path: /root/dacon/lightning-hydra-template/logs/train/runs/2023-09-08_02-53-57/checkpoints/epoch_018.ckpt
