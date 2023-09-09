@@ -110,7 +110,6 @@ class ManiqaModule(LightningModule):
         """
         img, score = batch["d_img_org"], batch["score"].squeeze()
         pred = self.forward(img)
-        pred = self.sig(pred)
         loss = self.criterion(pred, score)
         return loss, pred, score
 
