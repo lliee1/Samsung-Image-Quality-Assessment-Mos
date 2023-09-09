@@ -131,6 +131,10 @@ class ManiqaModule(LightningModule):
 
         # update and log metrics
         self.train_loss(loss)
+        optimizer = self.optimizers()
+        optimizer = optimizer.optimizer
+        self.lr = optimizer.param_groups[0]['lr']
+        self.log("Optimizer", self.lr, on_step=True, on_epoch=False)
         self.log(
             "train/loss", self.train_loss, on_step=True, on_epoch=False, prog_bar=True
         )

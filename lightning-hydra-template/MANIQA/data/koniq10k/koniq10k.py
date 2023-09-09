@@ -58,17 +58,16 @@ class MyDataset(torch.utils.data.Dataset):
     def __init__(self, csv_file, transform=None):
         self.df = pd.read_csv(csv_file)
         self.transform = transform
-        # score = self.df.mos.to_numpy()
-        # score = self.normalization(score)
-        # self.score_list = list(score.astype('float').reshape(-1, 1))
+        score = self.df.mos.to_numpy()
+        score = self.normalization(score)
+        self.score_list = list(score.astype('float').reshape(-1, 1))
             
 
     def __len__(self):
         return len(self.df)
     
-    # def normalization(self, data):
-    #     range = np.max(data) - np.min(data)
-    #     return (data - np.min(data)) / range     
+    def normalization(self, data):
+        return (data - 5) / 10  
      
     def __getitem__(self, idx):
         d_img = cv2.imread('/root/dacon/data'+self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
