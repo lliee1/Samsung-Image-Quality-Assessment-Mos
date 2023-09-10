@@ -175,6 +175,18 @@ class Normalize(object):
         sample = {'d_img_org': d_img, 'score': score}
         return sample
 
+class Normalize_test(object):
+    def __init__(self, mean, var):
+        self.mean = mean
+        self.var = var
+
+    def __call__(self, sample):
+        # r_img: C x H x W (numpy)
+        d_img = sample['d_img_org']
+        img_name = sample['img_name']
+        d_img = (d_img - self.mean) / self.var
+        sample = {'d_img_org': d_img, 'img_name': img_name}
+        return sample
 
 class RandHorizontalFlip(object):
     def __init__(self, prob_aug):
@@ -238,3 +250,17 @@ class ToTensor(object):
         }
         return sample
     
+
+class ToTensor_test(object):
+    def __init__(self):
+        pass
+
+    def __call__(self, sample):
+        d_img = sample['d_img_org']
+        img_name = sample['img_name']
+        d_img = torch.from_numpy(d_img).type(torch.FloatTensor)
+        sample = {
+            'd_img_org': d_img,
+            'img_name': img_name
+        }
+        return sample
