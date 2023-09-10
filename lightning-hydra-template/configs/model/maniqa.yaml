@@ -9,12 +9,12 @@ optimizer:
 scheduler:
   _target_: cosine_annealing_warmup.CosineAnnealingWarmupRestarts
   _partial_: true
-  first_cycle_steps: 9e+3
+  first_cycle_steps: 3e+3
   cycle_mult: 1.0
   max_lr: 1e-5
   min_lr: 1e-8
-  warmup_steps: 3e+3
-  gamma: 0.75
+  warmup_steps: 1e+3
+  gamma: 0.9
 
 net:
   _target_: MANIQA.models.maniqa.MANIQA
