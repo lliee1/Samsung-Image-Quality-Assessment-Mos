@@ -67,7 +67,7 @@ class MyDataset(torch.utils.data.Dataset):
         return len(self.df)
     
     def normalization(self, data):
-        return (data - 5) / 10  
+        return data / 10
      
     def __getitem__(self, idx):
         d_img = cv2.imread('/root/dacon/data'+self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
@@ -75,8 +75,8 @@ class MyDataset(torch.utils.data.Dataset):
         d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
         d_img = np.array(d_img).astype('float32') / 255
         d_img = np.transpose(d_img, (2, 0, 1))
-        # score = self.score_list[idx]
-        score = np.array(self.df.mos[idx])
+        score = self.score_list[idx]
+        # score = np.array(self.df.mos[idx])
 
         sample = {
             'd_img_org': d_img,
@@ -103,10 +103,15 @@ class MyDataset_test(torch.utils.data.Dataset):
         d_img = cv2.imread('/root/dacon/data'+self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
         d_img = cv2.resize(d_img, (224, 224), interpolation=cv2.INTER_CUBIC)
         d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
-        d_img = np.array(d_img).astype('float32')
-        image_name = self.df.img_name[idx]
+        d_img = np.array(d_img).astype('float32') / 255
+        d_img = np.transpose(d_img, (2, 0, 1))
+        img_name = self.df.img_name[idx]
 
+        sample = {
+            'd_img_org': d_img,
+            'img_name': img_name
+        }
         if self.transform:
-            sample = self.transform(d_img)
+            sample = self.transform(sample)
 
-        return sample, image_name
+        return sample
