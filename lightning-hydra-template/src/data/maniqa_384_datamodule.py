@@ -10,6 +10,7 @@ from MANIQA.data.koniq10k.koniq10k import (
     MyDataset_test,
     MyDataset_loss_check,
     MyDataset_with_blur,
+    MyDataset_384,
 )
 from MANIQA.utils.process import (
     RandCrop,
@@ -21,7 +22,7 @@ from MANIQA.utils.process import (
 )
 
 
-class ManiqaDataModule(LightningDataModule):
+class Maniqa_384DataModule(LightningDataModule):
     """`LightningDataModule` for the MNIST dataset.
 
     The MNIST database of handwritten digits has a training set of 60,000 examples, and a test set of 10,000 examples.
@@ -92,14 +93,14 @@ class ManiqaDataModule(LightningDataModule):
 
         self.train_transforms = transforms.Compose(
             [
-                RandCrop(patch_size=224),
+                RandCrop(patch_size=384),
                 Normalize(0.5, 0.5),
                 RandHorizontalFlip(prob_aug=0.7),
                 ToTensor(),
             ]
         )
         self.val_transforms = transforms.Compose(
-            [RandCrop(patch_size=224), Normalize(0.5, 0.5), ToTensor()]
+            [RandCrop(patch_size=384), Normalize(0.5, 0.5), ToTensor()]
         )
         self.test_transforms = transforms.Compose(
             [Normalize_test(0.5, 0.5), ToTensor_test()]
@@ -111,10 +112,10 @@ class ManiqaDataModule(LightningDataModule):
         # self.data_val: Optional[Dataset] = MyDataset(
         #     csv_file=valid_csv_file, transform=self.val_transforms
         # )
-        self.data_train: Optional[Dataset] = MyDataset_with_blur(
+        self.data_train: Optional[Dataset] = MyDataset_384(
             csv_file=train_csv_file, transform=self.train_transforms
         )
-        self.data_val: Optional[Dataset] = MyDataset(
+        self.data_val: Optional[Dataset] = MyDataset_384(
             csv_file=valid_csv_file, transform=self.val_transforms
         )
         self.data_test: Optional[Dataset] = MyDataset_test(

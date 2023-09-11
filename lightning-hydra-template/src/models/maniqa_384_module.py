@@ -10,7 +10,7 @@ import pandas as pd
 from cosine_annealing_warmup import CosineAnnealingWarmupRestarts
 
 
-class ManiqaModule(LightningModule):
+class Maniqa_384Module(LightningModule):
     """Example of a `LightningModule` for MNIST classification.
 
     A `LightningModule` implements 8 key methods:

@@ -1,4 +1,4 @@
-_target_: src.data.maniqa_datamodule.ManiqaDataModule
+_target_: src.data.maniqa_384_datamodule.Maniqa_384DataModule
 data_dir: ${paths.data_dir}
 batch_size: 8
 num_workers: 4

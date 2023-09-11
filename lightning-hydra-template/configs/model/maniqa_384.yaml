@@ -1,4 +1,4 @@
-_target_: src.models.maniqa_module.ManiqaModule
+_target_: src.models.maniqa_384_module.Maniqa_384Module
 
 optimizer:
   _target_: torch.optim.Adam
@@ -17,12 +17,12 @@ scheduler:
   gamma: 0.9
 
 net:
-  _target_: MANIQA.models.maniqa.MANIQA
+  _target_: MANIQA.models.maniqa.MANIQA_384
   embed_dim: 768
   num_outputs: 1
   dim_mlp: 768
-  patch_size: 8
-  img_size: 224
+  patch_size: 16
+  img_size: 384
   window_size: 4
   depths: [2,2]
   num_heads: [4,4]
