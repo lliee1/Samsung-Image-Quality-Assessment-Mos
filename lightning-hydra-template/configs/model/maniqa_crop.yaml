@@ -1,0 +1,34 @@
+_target_: src.models.maniqa_crop_module.Maniqa_cropModule
+
+optimizer:
+  _target_: torch.optim.Adam
+  _partial_: true
+  lr: 1e-5
+  weight_decay: 1e-5
+
+scheduler:
+  _target_: cosine_annealing_warmup.CosineAnnealingWarmupRestarts
+  _partial_: true
+  first_cycle_steps: 3e+3
+  cycle_mult: 1.0
+  max_lr: 1e-5
+  min_lr: 1e-10
+  warmup_steps: 1e+3
+  gamma: 0.9
+
+net:
+  _target_: MANIQA.models.maniqa.MANIQA
+  embed_dim: 768
+  num_outputs: 1
+  dim_mlp: 768
+  patch_size: 8
+  img_size: 224
+  window_size: 4
+  depths: [2,2]
+  num_heads: [4,4]
+  num_tab: 2
+  scale: 0.8
+
+
+# compile model for faster training with pytorch 2.0
+compile: false
