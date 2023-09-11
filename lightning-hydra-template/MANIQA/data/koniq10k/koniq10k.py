@@ -357,3 +357,106 @@ class MyDataset_crop_test(torch.utils.data.Dataset):
         img_name = self.df.img_name[idx]
         sample = {"d_img_ls": image_ls, "img_name": img_name}
         return sample
+    
+    
+class MyDataset_crop_384(torch.utils.data.Dataset):
+    def __init__(self, csv_file, transform=None):
+        self.df = pd.read_csv(csv_file)
+        self.transform = transform
+        score = self.df.mos.to_numpy()
+        score = self.normalization(score)
+        self.score_list = list(score.astype("float").reshape(-1, 1))
+
+    def __len__(self):
+        return len(self.df)
+
+    def normalization(self, data):
+        return data / 10
+
+    def __getitem__(self, idx):
+        d_img = cv2.imread("../../data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
+        h, w, c = d_img.shape
+        if h < 384 or w < 384:
+            d_img = cv2.resize(d_img, (384, 384), interpolation=cv2.INTER_CUBIC)
+        d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
+        d_img = np.array(d_img).astype("float32")
+        # d_img = np.transpose(d_img, (2, 0, 1))
+        score = self.score_list[idx]
+        # score = np.array(self.df.mos[idx])
+
+        if self.transform:
+            d_img = self.transform(image=d_img)['image']
+        sample = {"d_img_org": d_img, "score": score}
+        
+        return sample
+
+class MyDataset_crop_val_384(torch.utils.data.Dataset):
+    def __init__(self, csv_file):
+        self.df = pd.read_csv(csv_file)
+        score = self.df.mos.to_numpy()
+        score = self.normalization(score)
+        self.score_list = list(score.astype("float").reshape(-1, 1))
+
+    def __len__(self):
+        return len(self.df)
+
+    def normalization(self, data):
+        return data / 10
+
+    def __getitem__(self, idx):
+        d_img = cv2.imread("../../data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
+        h, w, c = d_img.shape
+        if h < 384 or w < 384:
+            d_img = cv2.resize(d_img, (384, 384), interpolation=cv2.INTER_CUBIC)
+        d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
+        d_img = np.array(d_img).astype("float32")
+        # d_img = np.transpose(d_img, (2, 0, 1))
+        score = self.score_list[idx]
+        # score = np.array(self.df.mos[idx])
+        
+        transform_ = A.Compose([
+            A.RandomCrop(height=384,width=384),
+            A.Normalize(mean = 0.5, std= 0.5),
+            ToTensorV2(p=1)       
+        ])
+        
+        image_ls = []
+        for i in range(10):
+            temp = transform_(image=d_img)['image']
+            image_ls.append(temp)
+
+        image_ls = torch.stack(image_ls, dim=0)
+        sample = {"d_img_ls": image_ls, "score": score}
+        return sample
+    
+class MyDataset_crop_test_384(torch.utils.data.Dataset):
+    def __init__(self, csv_file):
+        self.df = pd.read_csv(csv_file)
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        d_img = cv2.imread("../../data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
+        h, w, c = d_img.shape
+        if h < 384 or w < 384:
+            d_img = cv2.resize(d_img, (384, 384), interpolation=cv2.INTER_CUBIC)
+        d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
+        d_img = np.array(d_img).astype("float32")
+        # d_img = np.transpose(d_img, (2, 0, 1))
+        transform_ = A.Compose([
+            A.RandomCrop(height=384,width=384),
+            A.Normalize(mean = 0.5, std= 0.5),
+            ToTensorV2(p=1)       
+        ])
+        
+        image_ls = []
+        for _ in range(10):
+            temp = transform_(image=d_img)['image']
+            image_ls.append(temp)
+                
+        image_ls = torch.stack(image_ls, dim=0)
+        
+        img_name = self.df.img_name[idx]
+        sample = {"d_img_ls": image_ls, "img_name": img_name}
+        return sample
