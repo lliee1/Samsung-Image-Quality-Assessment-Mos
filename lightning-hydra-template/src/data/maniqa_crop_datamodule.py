@@ -12,7 +12,7 @@ from MANIQA.data.koniq10k.koniq10k import (
     MyDataset_with_blur,
     MyDataset_crop,
     MyDataset_crop_test,
-    MyDataset_crop_val
+    MyDataset_crop_val,
 )
 from MANIQA.utils.process import (
     RandCrop,
@@ -24,6 +24,7 @@ from MANIQA.utils.process import (
 )
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
+
 
 class Maniqa_cropDataModule(LightningDataModule):
     """`LightningDataModule` for the MNIST dataset.
@@ -109,13 +110,22 @@ class Maniqa_cropDataModule(LightningDataModule):
         #     [Normalize_test(0.5, 0.5), ToTensor_test()]
         # )
 
-        self.train_transforms = A.Compose([
-            A.RandomCrop(224, 224),
-            A.HorizontalFlip(p=0.7),
-            A.Normalize(mean = 0.5, std= 0.5),
-            ToTensorV2(p=1)
-        ])
-    
+        self.train_transforms = A.Compose(
+            [
+                A.RandomCrop(224, 224),
+                A.HorizontalFlip(p=0.7),
+                A.Normalize(mean=0.5, std=0.5),
+                ToTensorV2(p=1),
+            ]
+        )
+        self.val_transforms = A.Compose(
+            [A.Normalize(mean=0.5, std=0.5), ToTensorV2(p=1)]
+        )
+
+        self.test_transforms = A.Compose(
+            [A.Normalize(mean=0.5, std=0.5), ToTensorV2(p=1)]
+        )
+
         # self.data_train: Optional[Dataset] = MyDataset(
         #     csv_file=train_csv_file, transform=self.train_transforms
         # )
@@ -134,12 +144,10 @@ class Maniqa_cropDataModule(LightningDataModule):
             csv_file=train_csv_file, transform=self.train_transforms
         )
         self.data_val: Optional[Dataset] = MyDataset_crop_val(
-            csv_file=valid_csv_file
+            csv_file=valid_csv_file, transform=self.val_transforms
         )
 
-        self.data_test: Optional[Dataset] = MyDataset_crop_test(
-            csv_file=test_csv_file
-        )
+        self.data_test: Optional[Dataset] = MyDataset_crop_test(csv_file=test_csv_file)
 
         # self.data_test: Optional[Dataset] = MyDataset_loss_check(
         #     csv_file=valid_csv_file, transform=self.val_transforms

@@ -11,7 +11,8 @@ from MANIQA.data.koniq10k.koniq10k import (
     MyDataset_loss_check,
     MyDataset_with_blur,
     MyDataset_384,
-    MyDataset_384_test
+    MyDataset_384_test,
+    MyDataset_with_blur_384,
 )
 from MANIQA.utils.process import (
     RandCrop,
@@ -113,7 +114,7 @@ class Maniqa_384DataModule(LightningDataModule):
         # self.data_val: Optional[Dataset] = MyDataset(
         #     csv_file=valid_csv_file, transform=self.val_transforms
         # )
-        self.data_train: Optional[Dataset] = MyDataset_384(
+        self.data_train: Optional[Dataset] = MyDataset_with_blur_384(
             csv_file=train_csv_file, transform=self.train_transforms
         )
         self.data_val: Optional[Dataset] = MyDataset_384(
