@@ -281,7 +281,7 @@ class Maniqa_cropModule(LightningModule):
         submit_df.insert(1, "mos", self.mos_ls)
         submit_df.insert(2, "comments", self.comments_ls)
         submit_df.to_csv(
-            "/root/dacon/data/submit_maniqa_blur_normal10_0911.csv",
+            "/root/dacon/data/submit_maniqa_crop_eval_will_resize.csv",
             mode="w",
             index=False,
         )
