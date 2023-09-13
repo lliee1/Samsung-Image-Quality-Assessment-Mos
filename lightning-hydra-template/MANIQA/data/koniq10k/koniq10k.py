@@ -161,6 +161,55 @@ class MyDataset_with_blur_384(torch.utils.data.Dataset):
         return sample
 
 
+class MyDataset_with_downscale(torch.utils.data.Dataset):
+    def __init__(self, csv_file, transform=None):
+        self.df = pd.read_csv(csv_file)
+        self.transform = transform
+        score = self.df.mos.to_numpy()
+        score = self.normalization(score)
+        self.score_list = list(score.astype("float").reshape(-1, 1))
+
+    def __len__(self):
+        return len(self.df)
+
+    def normalization(self, data):
+        return data / 10
+
+    def __getitem__(self, idx):
+        d_img = cv2.imread("../../data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
+        d_img = cv2.resize(d_img, (224, 224), interpolation=cv2.INTER_CUBIC)
+        d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
+
+        # apply blur or not
+        p_aug = np.array([0.5, 0.5])
+        prob_lr = np.random.choice([1, 0], p=p_aug.ravel())
+        if prob_lr > 0.5:
+            blur_transform = A.Compose(
+                [
+                    A.Downscale(
+                        always_apply=False,
+                        p=1.0,
+                        scale_min=0.25,
+                        scale_max=0.25,
+                        interpolation=0,
+                    )
+                ]
+            )
+            d_img = blur_transform(image=d_img)["image"]
+            score = np.random.normal(0.2, 0.02)
+
+        d_img = np.array(d_img).astype("float32") / 255
+        d_img = np.transpose(d_img, (2, 0, 1))
+        score = self.score_list[idx]
+        # score = np.array(self.df.mos[idx])
+
+        sample = {"d_img_org": d_img, "score": score}
+
+        if self.transform:
+            sample = self.transform(sample)
+        return sample
+
+
 class MyDataset_caption(torch.utils.data.Dataset):
     def __init__(self, csv_file, transform=None):
         self.df = pd.read_csv(csv_file)
@@ -487,4 +536,98 @@ class MyDataset_crop_test_384(torch.utils.data.Dataset):
 
         img_name = self.df.img_name[idx]
         sample = {"d_img_ls": image_ls, "img_name": img_name}
+        return sample
+
+
+
+
+
+
+
+
+
+
+# maxvit
+class MyDataset_maxvit_train(torch.utils.data.Dataset):
+    def __init__(self, csv_file, transform=None):
+        self.df = pd.read_csv(csv_file)
+        self.transform = transform
+        score = self.df.mos.to_numpy()
+        score = self.normalization(score)
+        self.score_list = list(score.astype("float").reshape(-1, 1))
+
+    def __len__(self):
+        return len(self.df)
+
+    def normalization(self, data):
+        return data / 10
+
+    def __getitem__(self, idx):
+        d_img = cv2.imread("../../data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
+        d_img = cv2.resize(d_img, (512, 512), interpolation=cv2.INTER_CUBIC)
+        d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
+        d_img = np.array(d_img).astype("float32")
+        score = self.score_list[idx]
+
+        sample = {"d_img_org": d_img, "score": score}
+
+        if self.transform:
+            sample = self.transform(sample)
+        return sample
+    
+    
+class MyDataset_maxvit_val(torch.utils.data.Dataset):
+    def __init__(self, csv_file, transform=None):
+        self.df = pd.read_csv(csv_file)
+        self.transform = transform
+        score = self.df.mos.to_numpy()
+        score = self.normalization(score)
+        self.score_list = list(score.astype("float").reshape(-1, 1))
+
+    def __len__(self):
+        return len(self.df)
+
+    def normalization(self, data):
+        return data / 10
+
+    def __getitem__(self, idx):
+        d_img = cv2.imread("../../data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
+        d_img = cv2.resize(d_img, (512, 512), interpolation=cv2.INTER_CUBIC)
+        d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
+        d_img = np.array(d_img).astype("float32")
+        score = self.score_list[idx]
+        # score = np.array(self.df.mos[idx])
+
+        sample = {"d_img_org": d_img, "score": score}
+
+        if self.transform:
+            sample = self.transform(sample)
+        return sample
+    
+    
+class MyDataset_maxvit_test(torch.utils.data.Dataset):
+    def __init__(self, csv_file, transform=None):
+        self.df = pd.read_csv(csv_file)
+        self.transform = transform
+        score = self.df.mos.to_numpy()
+        score = self.normalization(score)
+        self.score_list = list(score.astype("float").reshape(-1, 1))
+
+    def __len__(self):
+        return len(self.df)
+
+    def normalization(self, data):
+        return data / 10
+
+    def __getitem__(self, idx):
+        d_img = cv2.imread("../../data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
+        d_img = cv2.resize(d_img, (512, 512), interpolation=cv2.INTER_CUBIC)
+        d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
+        d_img = np.array(d_img).astype("float32")
+
+        if self.transform:
+            d_img = self.transform(image=d_img)["image"]
+
+        img_name = self.df.img_name[idx]
+        sample = {"d_img_org": d_img, "img_name": img_name}
         return sample

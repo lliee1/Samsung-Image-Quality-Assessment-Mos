@@ -263,7 +263,7 @@ class Maniqa_384Module(LightningModule):
         submit_df.insert(1, "mos", self.mos_ls)
         submit_df.insert(2, "comments", self.comments_ls)
         submit_df.to_csv(
-            "/root/dacon/data/submit_maniqa_normal10_0911.csv", mode="w", index=False
+            "/root/dacon/data/submit_maniqa_384_blur_0913.csv", mode="w", index=False
         )
 
     def setup(self, stage: str) -> None:

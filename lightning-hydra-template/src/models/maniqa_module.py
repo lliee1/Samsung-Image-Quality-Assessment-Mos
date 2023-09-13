@@ -65,7 +65,6 @@ class ManiqaModule(LightningModule):
         self.net = net
 
         # loss function
-        self.criterion = torch.nn.MSELoss()
 
         # metric objects for calculating and averaging accuracy across batches
 
@@ -82,6 +81,29 @@ class ManiqaModule(LightningModule):
         self.mos_ls = []
         self.image_name_ls = []
         self.comments_ls = []
+
+    def criterion(self, tensor_a, tensor_b, p=1):
+        tensor_a = tensor_a / (torch.sum(tensor_a, dim=-1, keepdim=True) + 1e-14)
+        tensor_b = tensor_b / (torch.sum(tensor_b, dim=-1, keepdim=True) + 1e-14)
+
+        cdf_tensor_a = torch.cumsum(tensor_a, dim=-1)
+        cdf_tensor_b = torch.cumsum(tensor_b, dim=-1)
+
+        # choose different formulas for different norm situations
+        if p == 1:
+            cdf_distance = torch.sum(torch.abs((cdf_tensor_a - cdf_tensor_b)), dim=-1)
+        elif p == 2:
+            cdf_distance = torch.sqrt(
+                torch.sum(torch.pow((cdf_tensor_a - cdf_tensor_b), 2), dim=-1)
+            )
+        else:
+            cdf_distance = torch.pow(
+                torch.sum(torch.pow(torch.abs(cdf_tensor_a - cdf_tensor_b), p), dim=-1),
+                1 / p,
+            )
+
+        cdf_loss = cdf_distance.mean()
+        return cdf_loss
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Perform a forward pass through the model `self.net`.
@@ -111,7 +133,7 @@ class ManiqaModule(LightningModule):
         """
         img, score = batch["d_img_org"], batch["score"].squeeze()
         pred = self.forward(img)
-        loss = self.criterion(pred, score)
+        loss = self.criterion(pred, score, p=1).cuda()
         return loss, pred, score
 
     def training_step(
@@ -263,7 +285,7 @@ class ManiqaModule(LightningModule):
         submit_df.insert(1, "mos", self.mos_ls)
         submit_df.insert(2, "comments", self.comments_ls)
         submit_df.to_csv(
-            "/root/dacon/data/submit_maniqa_normal10_0911.csv", mode="w", index=False
+            "/root/dacon/data/submit_maniqa_blur_EMD_0913.csv", mode="w", index=False
         )
 
     def setup(self, stage: str) -> None:

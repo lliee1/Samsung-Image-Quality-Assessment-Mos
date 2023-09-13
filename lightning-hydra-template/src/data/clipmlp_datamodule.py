@@ -6,9 +6,14 @@ from torch.utils.data import ConcatDataset, DataLoader, Dataset, random_split
 from torchvision.datasets import MNIST
 from torchvision.transforms import transforms
 from MANIQA.data.koniq10k.koniq10k import MyDataset, MyDataset_test
-from MANIQA.utils.process import RandCrop ,Normalize,ToTensor, RandHorizontalFlip
-
-
+from MANIQA.utils.process import (
+    RandCrop,
+    Normalize,
+    ToTensor,
+    RandHorizontalFlip,
+    Normalize_test,
+    ToTensor_test,
+)
 
 
 class clipmlpDataModule(LightningDataModule):
@@ -62,10 +67,9 @@ class clipmlpDataModule(LightningDataModule):
         batch_size: int = 64,
         num_workers: int = 0,
         pin_memory: bool = False,
-        train_csv_file : str = "",
-        valid_csv_file : str = "",
-        test_csv_file : str = "",
-
+        train_csv_file: str = "",
+        valid_csv_file: str = "",
+        test_csv_file: str = "",
     ) -> None:
         """Initialize a `MNISTDataModule`.
 
@@ -82,15 +86,30 @@ class clipmlpDataModule(LightningDataModule):
         self.save_hyperparameters(logger=False)
 
         # transform
-        self.train_transforms = transforms.Compose([RandCrop(patch_size=224),
-                Normalize(0.5, 0.5), RandHorizontalFlip(prob_aug=0.7), ToTensor()])
-        self.val_transforms = transforms.Compose([RandCrop(patch_size=224),
-                Normalize(0.5, 0.5), ToTensor()])
-        self.test_transforms = transforms.Compose([transforms.ToTensor()])
+        self.train_transforms = transforms.Compose(
+            [
+                RandCrop(patch_size=224),
+                Normalize(0.5, 0.5),
+                RandHorizontalFlip(prob_aug=0.7),
+                ToTensor(),
+            ]
+        )
+        self.val_transforms = transforms.Compose(
+            [RandCrop(patch_size=224), Normalize(0.5, 0.5), ToTensor()]
+        )
+        self.test_transforms = transforms.Compose(
+            [Normalize_test(0.5, 0.5), ToTensor_test()]
+        )
 
-        self.data_train: Optional[Dataset] = MyDataset(csv_file=train_csv_file, transform=self.train_transforms)
-        self.data_val: Optional[Dataset] = MyDataset(csv_file=valid_csv_file, transform=self.val_transforms)
-        self.data_test: Optional[Dataset] = MyDataset_test(csv_file=test_csv_file, transform=self.test_transforms)
+        self.data_train: Optional[Dataset] = MyDataset(
+            csv_file=train_csv_file, transform=self.train_transforms
+        )
+        self.data_val: Optional[Dataset] = MyDataset(
+            csv_file=valid_csv_file, transform=self.val_transforms
+        )
+        self.data_test: Optional[Dataset] = MyDataset_test(
+            csv_file=test_csv_file, transform=self.test_transforms
+        )
 
     @property
     def num_classes(self) -> int:

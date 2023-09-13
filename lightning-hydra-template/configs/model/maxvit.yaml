@@ -1,0 +1,23 @@
+_target_: src.models.maxvit_module.MaxvitModule
+
+optimizer:
+  _target_: torch.optim.Adam
+  _partial_: true
+  lr: 1e-5
+  weight_decay: 1e-5
+
+scheduler:
+  _target_: cosine_annealing_warmup.CosineAnnealingWarmupRestarts
+  _partial_: true
+  first_cycle_steps: 800
+  cycle_mult: 1.0
+  max_lr: 1e-5
+  min_lr: 1e-10
+  warmup_steps: 200
+  gamma: 0.9
+
+net:
+  _target_: src.models.components.maxvit.Maxvit
+
+# compile model for faster training with pytorch 2.0
+compile: false

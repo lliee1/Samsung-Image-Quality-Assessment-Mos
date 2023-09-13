@@ -1,0 +1,27 @@
+_target_: src.models.clipmlp_caption_module.clipmlp_captionModule
+
+optimizer:
+  _target_: torch.optim.Adam
+  _partial_: true
+  lr: 3e-3
+  weight_decay: 1e-5
+
+scheduler:
+  _target_: cosine_annealing_warmup.CosineAnnealingWarmupRestarts
+  _partial_: true
+  first_cycle_steps: 1000
+  cycle_mult: 1.0
+  max_lr: 3e-3
+  min_lr: 1e-8
+  warmup_steps: 300
+  gamma: 0.9
+
+
+net:
+  _target_: src.models.components.clip_mlp_caption.clip_mlp_caption
+  vis_dim: 512
+  device: "cuda"
+  
+
+# compile model for faster training with pytorch 2.0
+compile: false

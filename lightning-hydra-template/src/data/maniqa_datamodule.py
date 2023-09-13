@@ -10,6 +10,7 @@ from MANIQA.data.koniq10k.koniq10k import (
     MyDataset_test,
     MyDataset_loss_check,
     MyDataset_with_blur,
+    MyDataset_with_downscale,
 )
 from MANIQA.utils.process import (
     RandCrop,
@@ -92,14 +93,13 @@ class ManiqaDataModule(LightningDataModule):
 
         self.train_transforms = transforms.Compose(
             [
-                RandCrop(patch_size=224),
                 Normalize(0.5, 0.5),
                 RandHorizontalFlip(prob_aug=0.7),
                 ToTensor(),
             ]
         )
         self.val_transforms = transforms.Compose(
-            [RandCrop(patch_size=224), Normalize(0.5, 0.5), ToTensor()]
+            [Normalize(0.5, 0.5), ToTensor()]
         )
         self.test_transforms = transforms.Compose(
             [Normalize_test(0.5, 0.5), ToTensor_test()]

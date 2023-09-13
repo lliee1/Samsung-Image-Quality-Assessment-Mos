@@ -135,10 +135,8 @@ class clipmlpModule(LightningModule):
         
         # update and log metrics
         self.train_loss(loss)
-        optimizer = self.optimizers()
-        optimizer = optimizer.optimizer
-        self.lr = optimizer.param_groups[0]['lr']
-        self.log("Optimizer", self.lr, on_step=True, on_epoch=False)
+        current_lr = self.trainer.optimizers[0].param_groups[0]["lr"]
+        self.log("Learning rate", current_lr, on_step=True, on_epoch=False)
         self.log("train/loss", self.train_loss, on_step=True, on_epoch=False, prog_bar=True)
 
         # return loss or backpropagation will fail
@@ -184,32 +182,39 @@ class clipmlpModule(LightningModule):
         self.val_labels_epoch = []
 
 
-    def test_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
+    def test_step(
+        self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int
+    ) -> None:
         """Perform a single test step on a batch of data from the test set.
 
         :param batch: A batch of data (a tuple) containing the input tensor of images and target
             labels.
         :param batch_idx: The index of the current batch.
         """
-        img, img_name = batch
+        img, img_name = batch['d_img_org'], batch['img_name']
         pred = self.forward(img)
 
         for mos in pred:
-            self.mos_ls.append(round(float(mos),11))
-    
+            mos = mos * 10
+            if mos > 10:
+                mos = 10.
+            if mos < 0:
+                mos = 0.
+            self.mos_ls.append(round(float(mos), 11))
+
         for name in img_name:
             self.image_name_ls.append(name)
 
         for _ in range(len(img_name)):
-            self.comments_ls.append('Nice image')
-        
+            self.comments_ls.append("Nice image")
 
     def on_test_epoch_end(self) -> None:
         """Lightning hook that is called when a test epoch ends."""
-        submit_df = pd.DataFrame(self.image_name_ls, columns=['img_name'])
-        submit_df.insert(1, 'mos', self.mos_ls)
-        submit_df.insert(2, 'comments', self.comments_ls)
-        submit_df.to_csv('/root/dacon/data/submit_mlp0.csv', mode='w', index=False)
+
+        submit_df = pd.DataFrame(self.image_name_ls, columns=["img_name"])
+        submit_df.insert(1, "mos", self.mos_ls)
+        submit_df.insert(2, "comments", self.comments_ls)
+        submit_df.to_csv("/root/dacon/data/submit_clip_normalize_learningrate.csv", mode="w", index=False)
 
 
     def setup(self, stage: str) -> None:
@@ -241,7 +246,7 @@ class clipmlpModule(LightningModule):
                 "lr_scheduler": {
                     "scheduler": scheduler,
                     "monitor": "val/metric",
-                    "interval": "epoch",
+                    "interval": "step",
                     "frequency": 1,
                 },
             }
