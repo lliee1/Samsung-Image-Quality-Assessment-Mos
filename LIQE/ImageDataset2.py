@@ -7,6 +7,7 @@ from PIL import Image, ImageFile
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
+
 IMG_EXTENSIONS = [".jpg", ".jpeg", ".png", ".ppm", ".bmp", ".pgm", ".tif"]
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -343,7 +344,7 @@ class ImageDataset_test(Dataset):
             img_dir (string): Directory of the images.
             transform (callable, optional): transform to be applied on a sample.
         """
-        self.data = pd.read_csv(csv_file, sep="\t", header=None)
+        self.data = pd.read_csv(csv_file)
         print("%d csv data successfully loaded!" % self.__len__())
         self.loader = get_loader()
         self.preprocess = preprocess
@@ -354,6 +355,7 @@ class ImageDataset_test(Dataset):
         image_name = "../data" + self.data.img_path[index][1:]
         I = self.loader(image_name)
         I = self.preprocess(I)
+        print(I.size())
         I = I.unsqueeze(0)
         n_channels = 3
         kernel_h = 224
@@ -380,37 +382,14 @@ class ImageDataset_test(Dataset):
         else:
             sel = torch.randint(low=0, high=patches.size(0), size=(self.num_patch,))
         patches = patches[sel, ...]
-        mos = self.data.iloc[index, 1]
-
-        dist_type = self.data.iloc[index, 2]
-        scene_content1 = self.data.iloc[index, 3]
-        scene_content2 = self.data.iloc[index, 4]
-        scene_content3 = self.data.iloc[index, 5]
-
-        if scene_content2 == "invalid":
-            valid = 1
-        elif scene_content3 == "invalid":
-            valid = 2
-        else:
-            valid = 3
+        mos = self.data.mos[index]
 
         sample = {
             "I": patches,
             "mos": float(mos),
-            "dist_type": dist_type,
-            "scene_content1": scene_content1,
-            "scene_content2": scene_content2,
-            "scene_content3": scene_content3,
-            "valid": valid,
         }
 
         return sample
 
     def __len__(self):
         return len(self.data.index)
-
-
-if __name__ == "__main__":
-    ImageDataset_test(
-        "/root/dacon/data/train_only_mos/train_df_4420.csv",
-    )

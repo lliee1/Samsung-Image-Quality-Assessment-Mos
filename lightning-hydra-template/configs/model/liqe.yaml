@@ -1,0 +1,19 @@
+_target_: src.models.liqe_module.LIQEModule
+
+optimizer:
+  _target_: torch.optim.AdamW
+  _partial_: true
+  lr: 5e-6
+  weight_decay: 1e-3
+
+scheduler:
+  _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+  _partial_: true
+  T_max: 5
+
+net:
+  _target_: src.models.components.liqe_mos.liqe
+  device: "cuda"
+
+# compile model for faster training with pytorch 2.0
+compile: false
