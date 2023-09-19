@@ -11,6 +11,7 @@ from cosine_annealing_warmup import CosineAnnealingWarmupRestarts
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 
+
 class Maniqa_crop_384Module(LightningModule):
     """Example of a `LightningModule` for MNIST classification.
 
@@ -83,7 +84,6 @@ class Maniqa_crop_384Module(LightningModule):
         self.mos_ls = []
         self.image_name_ls = []
         self.comments_ls = []
-        
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Perform a forward pass through the model `self.net`.
@@ -111,38 +111,47 @@ class Maniqa_crop_384Module(LightningModule):
             - A tensor of predictions.
             - A tensor of target labels.
         """
-        img, score = batch["d_img_org"], batch["score"].squeeze()
-        pred = self.forward(img)        
+        img, score = batch["I"], batch["score"].squeeze()
+        batch_size = img.size(0)
+        num_patch = img.size(1)
+        img = img.view(-1, img.size(2), img.size(3), img.size(4))
+
+        # (b*n)
+        pred = self.forward(img)
+        pred = pred.view(batch_size, num_patch)
+        pred = pred.mean(1)
         loss = self.criterion(pred.to(torch.float32), score.to(torch.float32))
         return loss, pred, score
-
 
     def val_model_step(
         self, batch: Tuple[torch.Tensor, torch.Tensor]
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        pred = 0
-        image_ls, score = batch["d_img_ls"], batch["score"].squeeze()
-        b,n,c,h,w = image_ls.shape
-        for i in range(n):
-            img = image_ls[:,i,:,:,:].squeeze()
-            pred += self.forward(img)
-        pred /= n
+        img, score = batch["I"], batch["score"].squeeze()
+        batch_size = img.size(0)
+        num_patch = img.size(1)
+        img = img.view(-1, img.size(2), img.size(3), img.size(4))
+
+        # (b*n)
+        pred = self.forward(img)
+        pred = pred.view(batch_size, num_patch)
+        pred = pred.mean(1)
         loss = self.criterion(pred.to(torch.float32), score.to(torch.float32))
         return loss, pred, score
-    
+
     def test_model_step(
         self, batch: Tuple[torch.Tensor, torch.Tensor]
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        pred = 0
-        image_ls, img_name = batch["d_img_ls"], batch["img_name"]
-        b,n,c,h,w = image_ls.shape
-        for i in range(n):
-            img = image_ls[:,i,:,:,:].squeeze()
-            pred += self.forward(img)
-        pred /= 10        
+        img, img_name = batch["I"], batch["img_name"]
+        batch_size = img.size(0)
+        num_patch = img.size(1)
+        img = img.view(-1, img.size(2), img.size(3), img.size(4))
+
+        # (b*n)
+        pred = self.forward(img)
+        pred = pred.view(batch_size, num_patch)
+        pred = pred.mean(1)
         return pred, img_name
-    
-    
+
     def training_step(
         self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int
     ) -> torch.Tensor:
@@ -153,7 +162,7 @@ class Maniqa_crop_384Module(LightningModule):
         :param batch_idx: The index of the current batch.
         :return: A tensor of losses between model predictions and targets.
         """
-        
+
         loss, pred, score = self.model_step(batch)
         pred_batch_numpy = pred.data.cpu().numpy()
         labels_batch_numpy = score.data.cpu().numpy()

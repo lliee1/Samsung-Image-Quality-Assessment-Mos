@@ -240,6 +240,27 @@ class MyDataset_caption(torch.utils.data.Dataset):
         return sample, caption
 
 
+class MyDataset_caption2(torch.utils.data.Dataset):
+    def __init__(self, csv_file, transform=None):
+        self.df = pd.read_csv(csv_file)
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        d_img = cv2.imread("/root/dacon/data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
+        d_img = cv2.resize(d_img, (224, 224), interpolation=cv2.INTER_CUBIC)
+        d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
+        d_img = np.array(d_img).astype("float32")
+        d_img = np.transpose(d_img, (2, 0, 1))
+        img_path = self.df.img_path[idx]
+        score = self.df.mos[idx]
+        caption = self.df.comments[idx]
+
+        return d_img, img_path, score, caption
+
+
 class MyDataset_test(torch.utils.data.Dataset):
     def __init__(self, csv_file, transform=None):
         self.df = pd.read_csv(csv_file)
@@ -539,14 +560,6 @@ class MyDataset_crop_test_384(torch.utils.data.Dataset):
         return sample
 
 
-
-
-
-
-
-
-
-
 # maxvit
 class MyDataset_maxvit_train(torch.utils.data.Dataset):
     def __init__(self, csv_file, transform=None):
@@ -574,8 +587,8 @@ class MyDataset_maxvit_train(torch.utils.data.Dataset):
         if self.transform:
             sample = self.transform(sample)
         return sample
-    
-    
+
+
 class MyDataset_maxvit_val(torch.utils.data.Dataset):
     def __init__(self, csv_file, transform=None):
         self.df = pd.read_csv(csv_file)
@@ -603,8 +616,8 @@ class MyDataset_maxvit_val(torch.utils.data.Dataset):
         if self.transform:
             sample = self.transform(sample)
         return sample
-    
-    
+
+
 class MyDataset_maxvit_test(torch.utils.data.Dataset):
     def __init__(self, csv_file, transform=None):
         self.df = pd.read_csv(csv_file)

@@ -5,28 +5,9 @@ from lightning import LightningDataModule
 from torch.utils.data import ConcatDataset, DataLoader, Dataset, random_split
 from torchvision.datasets import MNIST
 from torchvision.transforms import transforms
-from MANIQA.data.koniq10k.koniq10k import (
-    MyDataset,
-    MyDataset_test,
-    MyDataset_loss_check,
-    MyDataset_with_blur,
-    MyDataset_crop,
-    MyDataset_crop_test,
-    MyDataset_crop_val,
-    MyDataset_crop_384,
-    MyDataset_crop_test_384,
-    MyDataset_crop_val_384
-)
-from MANIQA.utils.process import (
-    RandCrop,
-    Normalize,
-    ToTensor,
-    RandHorizontalFlip,
-    ToTensor_test,
-    Normalize_test,
-)
-import albumentations as A
-from albumentations.pytorch.transforms import ToTensorV2
+from src.data.components.liqe_data import maniqa_crop_dataset
+from src.data.components.liqe_data import _preprocess2_448, _preprocess3_448
+
 
 class Maniqa_crop_384DataModule(LightningDataModule):
     """`LightningDataModule` for the MNIST dataset.
@@ -97,56 +78,27 @@ class Maniqa_crop_384DataModule(LightningDataModule):
         # also ensures init params will be stored in ckpt
         self.save_hyperparameters(logger=False)
 
-        # self.train_transforms = transforms.Compose(
-        #     [
-        #         RandCrop(patch_size=224),
-        #         Normalize(0.5, 0.5),
-        #         RandHorizontalFlip(prob_aug=0.7),
-        #         ToTensor(),
-        #     ]
-        # )
-        # self.val_transforms = transforms.Compose(
-        #     [RandCrop(patch_size=224), Normalize(0.5, 0.5), ToTensor()]
-        # )
-        # self.test_transforms = transforms.Compose(
-        #     [Normalize_test(0.5, 0.5), ToTensor_test()]
-        # )
+        preprocess = _preprocess2_448()
+        preprocess_flip = _preprocess3_448()
 
-        self.train_transforms = A.Compose([
-            A.RandomCrop(384, 384),
-            A.HorizontalFlip(p=0.7),
-            A.Normalize(mean = 0.5, std= 0.5),
-            ToTensorV2(p=1)
-        ])
-    
-        # self.data_train: Optional[Dataset] = MyDataset(
-        #     csv_file=train_csv_file, transform=self.train_transforms
-        # )
-        # self.data_val: Optional[Dataset] = MyDataset(
-        #     csv_file=valid_csv_file, transform=self.val_transforms
-        # )
-
-        # self.data_train: Optional[Dataset] = MyDataset_with_blur(
-        #     csv_file=train_csv_file, transform=self.train_transforms
-        # )
-        # self.data_val: Optional[Dataset] = MyDataset(
-        #     csv_file=valid_csv_file, transform=self.val_transforms
-        # )
-
-        self.data_train: Optional[Dataset] = MyDataset_crop_384(
-            csv_file=train_csv_file, transform=self.train_transforms
+        self.data_train: Optional[Dataset] = maniqa_crop_dataset(
+            csv_file=train_csv_file,
+            preprocess=preprocess_flip,
+            num_patch=3,
+            test=False,
         )
-        self.data_val: Optional[Dataset] = MyDataset_crop_val_384(
-            csv_file=valid_csv_file
+        self.data_val: Optional[Dataset] = maniqa_crop_dataset(
+            csv_file=valid_csv_file,
+            preprocess=preprocess,
+            num_patch=9,
+            test=False,
         )
-
-        self.data_test: Optional[Dataset] = MyDataset_crop_test_384(
-            csv_file=test_csv_file
+        self.data_test: Optional[Dataset] = maniqa_crop_dataset(
+            csv_file=test_csv_file,
+            preprocess=preprocess,
+            num_patch=9,
+            test=True,
         )
-
-        # self.data_test: Optional[Dataset] = MyDataset_loss_check(
-        #     csv_file=valid_csv_file, transform=self.val_transforms
-        # )
 
     @property
     def num_classes(self) -> int:
