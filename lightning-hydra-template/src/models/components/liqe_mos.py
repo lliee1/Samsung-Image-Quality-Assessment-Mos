@@ -9,7 +9,7 @@ class liqe(nn.Module):
         super().__init__()
         # clip
         self.device = device
-        self.clip_model, self.preprocess = clip.load("ViT-B/32", device=self.device)
+        self.clip_model, self.preprocess = clip.load("ViT-B/32", device=self.device, jit=False, )
 
     def forward(self, x, text):
         batch_size = x.size(0)

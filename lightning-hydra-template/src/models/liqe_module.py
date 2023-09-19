@@ -9,6 +9,9 @@ from scipy.stats import spearmanr, pearsonr
 import pandas as pd
 from cosine_annealing_warmup import CosineAnnealingWarmupRestarts
 import clip
+from src.data.components.liqe_data import Fidelity_Loss_distortion, Multi_Fidelity_Loss
+from src.data.components.utils_data import WeightMethods
+from itertools import product
 
 
 class LIQEModule(LightningModule):
@@ -64,11 +67,7 @@ class LIQEModule(LightningModule):
         self.save_hyperparameters(logger=False)
 
         # preprocessing
-        device = "cuda"
-        qualitys = ["bad", "poor", "fair", "good", "perfect"]
-        self.joint_texts = torch.cat(
-            [clip.tokenize(f"a photo of {q} quality") for q in qualitys]
-        ).to(device)
+        self.devices = "cuda"
 
         self.net = net
 
@@ -81,6 +80,8 @@ class LIQEModule(LightningModule):
         self.val_loss = MeanMetric()
         self.test_loss = MeanMetric()
 
+        self.loss_img2 = Fidelity_Loss_distortion()
+        self.loss_scene = Multi_Fidelity_Loss()
         self.train_pred_epoch = []
         self.train_labels_epoch = []
         self.val_pred_epoch = []
@@ -89,8 +90,153 @@ class LIQEModule(LightningModule):
         self.mos_ls = []
         self.image_name_ls = []
         self.comments_ls = []
+        self.qualitys = ["bad", "poor", "fair", "good", "perfect"]
+        self.scenes = [
+            "animal",
+            "cityscape",
+            "human",
+            "indoor",
+            "landscape",
+            "night",
+            "light",
+            "plant",
+            "still_life",
+            "sea",
+            "mountain",
+            "sports",
+            "sky",
+            "others",
+        ]
+        self.len_scene = len(self.scenes)
 
-    def criterion(self, y_pred_all, per_num, y_all):
+        self.scene2label = {
+            "animal": 0,
+            "cityscape": 1,
+            "human": 2,
+            "indoor": 3,
+            "landscape": 4,
+            "night": 5,
+            "light": 6,
+            "plant": 7,
+            "still_life": 8,
+            "sea": 9,
+            "mountain": 10,
+            "sports": 11,
+            "sky": 12,
+            "others": 13,
+        }
+        self.dists = [
+            "jpeg2000 compression",
+            "jpeg compression",
+            "white noise",
+            "gaussian blur",
+            "fastfading",
+            "fnoise",
+            "contrast",
+            "lens",
+            "motion",
+            "diffusion",
+            "shifting",
+            "color quantization",
+            "oversaturation",
+            "desaturation",
+            "white with color",
+            "impulse",
+            "multiplicative",
+            "white noise with denoise",
+            "brighten",
+            "darken",
+            "shifting the mean",
+            "jitter",
+            "noneccentricity patch",
+            "pixelate",
+            "quantization",
+            "color blocking",
+            "sharpness",
+            "realistic blur",
+            "realistic noise",
+            "underexposure",
+            "overexposure",
+            "realistic contrast change",
+            "bw",
+            "other realistic",
+        ]
+        self.dist_map = {
+            "jpeg2000 compression": "jpeg2000 compression",
+            "jpeg compression": "jpeg compression",
+            "white noise": "noise",
+            "gaussian blur": "blur",
+            "fastfading": "jpeg2000 compression",
+            "fnoise": "noise",
+            "contrast": "contrast",
+            "lens": "blur",
+            "motion": "blur",
+            "diffusion": "color",
+            "shifting": "blur",
+            "color quantization": "quantization",
+            "oversaturation": "color",
+            "desaturation": "color",
+            "white with color": "noise",
+            "impulse": "noise",
+            "multiplicative": "noise",
+            "white noise with denoise": "noise",
+            "brighten": "overexposure",
+            "darken": "underexposure",
+            "shifting the mean": "other",
+            "jitter": "spatial",
+            "noneccentricity patch": "spatial",
+            "pixelate": "spatial",
+            "quantization": "quantization",
+            "color blocking": "spatial",
+            "sharpness": "contrast",
+            "realistic blur": "blur",
+            "realistic noise": "noise",
+            "underexposure": "underexposure",
+            "overexposure": "overexposure",
+            "realistic contrast change": "contrast",
+            "bw": "other",
+            "other realistic": "other",
+        }
+
+        self.map2label = {
+            "jpeg2000 compression": 0,
+            "jpeg compression": 1,
+            "noise": 2,
+            "blur": 3,
+            "color": 4,
+            "contrast": 5,
+            "overexposure": 6,
+            "underexposure": 7,
+            "spatial": 8,
+            "quantization": 9,
+            "other": 10,
+        }
+
+        self.dists_map = [
+            "jpeg2000 compression",
+            "jpeg compression",
+            "noise",
+            "blur",
+            "color",
+            "contrast",
+            "overexposure",
+            "underexposure",
+            "spatial",
+            "quantization",
+            "other",
+        ]
+
+        self.len_dists = len(self.dists_map)
+        self.joint_texts = torch.cat(
+            [
+                clip.tokenize(
+                    f"a photo of a {c} with {d} artifacts, which is of {q} quality"
+                )
+                for q, c, d in product(self.qualitys, self.scenes, self.dists_map)
+            ]
+        ).to(self.devices)
+
+    def loss_m4(self, y_pred_all, per_num, y_all):
         """prediction monotonicity related loss"""
         esp = 1e-8
         loss = 0
@@ -130,6 +276,24 @@ class LIQEModule(LightningModule):
 
         return loss
 
+    def calc_loss(
+        self,
+        quality_pred,
+        quality_gt,
+        num_sample_per_task,
+        distortion_pred,
+        distortion_gt,
+        scene_pred,
+        scene_gt,
+    ):
+        quality_loss = self.loss_m4(
+            quality_pred, num_sample_per_task, quality_gt.detach()
+        )
+        distortion_loss = self.loss_img2(distortion_pred, distortion_gt.detach())
+        scene_loss = self.loss_scene(scene_pred, scene_gt.detach())
+
+        return [quality_loss, distortion_loss, scene_loss]
+
     def forward(self, x: torch.Tensor, text) -> torch.Tensor:
         """Perform a forward pass through the model `self.net`.
 
@@ -156,22 +320,52 @@ class LIQEModule(LightningModule):
             - A tensor of predictions.
             - A tensor of target labels.
         """
-        img, score = batch["I"], batch["mos"].squeeze()
+        img, score, scene1, dist = (
+            batch["I"],
+            batch["mos"].squeeze(),
+            batch["scene"],
+            batch["dists"],
+        )
+        scene_gt = np.zeros((len(scene1), self.len_scene), dtype=float)
+        dist_gt = np.zeros((len(dist), self.len_dists), dtype=float)
+        for i in range(len(scene1)):
+            scene_gt[i, self.scene2label[scene1[i]]] = 1.0
+            dist_gt[i, self.map2label[self.dist_map[dist[i]]]] = 1.0
+        scene_gt = torch.from_numpy(scene_gt).to(self.devices)
+        dist_gt = torch.from_numpy(dist_gt).to(self.devices)
+
+        scene_gt_batch = []
+        dist_gt_batch = []
+        scene_gt_batch.append(scene_gt)
+        dist_gt_batch.append(dist_gt)
+        scene_gt_batch = torch.cat(scene_gt_batch, dim=0)
+        dist_gt_batch = torch.cat(dist_gt_batch, dim=0)
+
         num_sample_per_task = []
         num_sample_per_task.append(img.size(0))
         logits_per_image, _ = self.forward(img, self.joint_texts)
-        logits_quality = (
-            1 * logits_per_image[:, 0]
-            + 2 * logits_per_image[:, 1]
-            + 3 * logits_per_image[:, 2]
-            + 4 * logits_per_image[:, 3]
-            + 5 * logits_per_image[:, 4]
+        logits_per_image = logits_per_image.view(
+            -1, len(self.qualitys), len(self.scenes), len(self.dists_map)
         )
-        loss = self.criterion(
-            logits_quality, num_sample_per_task, score.detach()
-        ).mean()
+        logits_quality = logits_per_image.sum(3).sum(2)
+        logits_scene = logits_per_image.sum(3).sum(1)
+        logits_distortion = logits_per_image.sum(1).sum(1)
 
-        return loss, logits_quality, score
+        logits_quality = (
+            1 * logits_quality[:, 0]
+            + 2 * logits_quality[:, 1]
+            + 3 * logits_quality[:, 2]
+            + 4 * logits_quality[:, 3]
+            + 5 * logits_quality[:, 4]
+        )
+
+        total_loss = (
+            self.loss_m4(logits_quality, num_sample_per_task, score.detach()).mean()
+            + self.loss_img2(logits_distortion, dist_gt_batch.detach()).mean()
+            + self.loss_scene(logits_scene, scene_gt_batch.detach()).mean()
+        )
+
+        return total_loss, logits_quality, score
 
     def training_step(
         self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int
@@ -292,14 +486,24 @@ class LIQEModule(LightningModule):
         :param batch_idx: The index of the current batch.
         """
         img, img_name = batch["d_img_org"], batch["img_name"]
+
+        num_sample_per_task = []
+        num_sample_per_task.append(img.size(0))
         logits_per_image, _ = self.forward(img, self.joint_texts)
-        pred = (
-            1 * logits_per_image[:, 0]
-            + 2 * logits_per_image[:, 1]
-            + 3 * logits_per_image[:, 2]
-            + 4 * logits_per_image[:, 3]
-            + 5 * logits_per_image[:, 4]
+
+        logits_per_image = logits_per_image.view(
+            -1, len(self.qualitys), len(self.scenes), len(self.dists_map)
         )
+        logits_quality = logits_per_image.sum(3).sum(2)
+
+        pred = (
+            1 * logits_quality[:, 0]
+            + 2 * logits_quality[:, 1]
+            + 3 * logits_quality[:, 2]
+            + 4 * logits_quality[:, 3]
+            + 5 * logits_quality[:, 4]
+        )
+
         for mos in pred:
             mos = self.denormalize(mos)
             if mos > 10:

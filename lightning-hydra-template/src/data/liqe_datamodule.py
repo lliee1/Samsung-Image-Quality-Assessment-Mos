@@ -88,7 +88,7 @@ class LIQEDataModule(LightningDataModule):
         self.data_val: Optional[Dataset] = liqe_dataset(
             csv_file=valid_csv_file,
             preprocess=preprocess,
-            num_patch=3,
+            num_patch=10,
             test=False,
         )
         self.data_test: Optional[Dataset] = liqe_dataset(
