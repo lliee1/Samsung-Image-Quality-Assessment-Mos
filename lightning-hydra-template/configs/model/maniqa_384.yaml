@@ -14,7 +14,7 @@ scheduler:
   max_lr: 1e-5
   min_lr: 1e-10
   warmup_steps: 1e+3
-  gamma: 0.9
+  gamma: 0.99
 
 net:
   _target_: MANIQA.models.maniqa.MANIQA_384
