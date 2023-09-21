@@ -97,7 +97,7 @@ class Maniqa_384DataModule(LightningDataModule):
             [
                 RandCrop(patch_size=384),
                 Normalize(0.5, 0.5),
-                RandHorizontalFlip(prob_aug=0.7),
+                RandHorizontalFlip(prob_aug=0.5),
                 ToTensor(),
             ]
         )
@@ -114,7 +114,7 @@ class Maniqa_384DataModule(LightningDataModule):
         # self.data_val: Optional[Dataset] = MyDataset(
         #     csv_file=valid_csv_file, transform=self.val_transforms
         # )
-        self.data_train: Optional[Dataset] = MyDataset_with_blur_384(
+        self.data_train: Optional[Dataset] = MyDataset_384(
             csv_file=train_csv_file, transform=self.train_transforms
         )
         self.data_val: Optional[Dataset] = MyDataset_384(
