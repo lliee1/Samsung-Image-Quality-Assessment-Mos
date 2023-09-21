@@ -3,6 +3,6 @@ data_dir: ${paths.data_dir}
 batch_size: 8
 num_workers: 4
 pin_memory: true
-train_csv_file: ${paths.data_dir}/train_only_mos/train_df_4420.csv
-valid_csv_file: ${paths.data_dir}/train_only_mos/val_df_4420.csv
+train_csv_file: ${paths.data_dir}/train_only_mos/train_df_fold0.csv
+valid_csv_file: ${paths.data_dir}/train_only_mos/val_df_fold0.csv
 test_csv_file: ${paths.data_dir}/test.csv
