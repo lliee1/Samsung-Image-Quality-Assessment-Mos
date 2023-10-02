@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import pandas as pd
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
+from PIL import Image
 
 
 class Koniq10k(torch.utils.data.Dataset):
@@ -249,7 +250,9 @@ class MyDataset_caption2(torch.utils.data.Dataset):
         return len(self.df)
 
     def __getitem__(self, idx):
-        d_img = cv2.imread("/root/dacon/data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
+        d_img = cv2.imread(
+            "/root/dacon/data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR
+        )
         d_img = cv2.resize(d_img, (224, 224), interpolation=cv2.INTER_CUBIC)
         d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
         d_img = np.array(d_img).astype("float32")
@@ -295,6 +298,75 @@ class MyDataset_384_test(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         d_img = cv2.imread("../../data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
         d_img = cv2.resize(d_img, (384, 384), interpolation=cv2.INTER_CUBIC)
+        d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
+        d_img = np.array(d_img).astype("float32") / 255
+        d_img = np.transpose(d_img, (2, 0, 1))
+        img_name = self.df.img_name[idx]
+
+        sample = {"d_img_org": d_img, "img_name": img_name}
+        if self.transform:
+            sample = self.transform(sample)
+
+        return sample
+
+
+class MyDataset_256_test(torch.utils.data.Dataset):
+    def __init__(self, csv_file, transform=None):
+        self.df = pd.read_csv(csv_file)
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        d_img = cv2.imread("../../data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
+        d_img = cv2.resize(d_img, (256, 256), interpolation=cv2.INTER_CUBIC)
+        d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
+        d_img = np.array(d_img).astype("float32") / 255
+        d_img = np.transpose(d_img, (2, 0, 1))
+        img_name = self.df.img_name[idx]
+
+        sample = {"d_img_org": d_img, "img_name": img_name}
+        if self.transform:
+            sample = self.transform(sample)
+
+        return sample
+
+
+class MyDataset_448_test(torch.utils.data.Dataset):
+    def __init__(self, csv_file, transform=None):
+        self.df = pd.read_csv(csv_file)
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        d_img = cv2.imread("../../data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
+        d_img = cv2.resize(d_img, (448, 448), interpolation=cv2.INTER_CUBIC)
+        d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
+        d_img = np.array(d_img).astype("float32") / 255
+        d_img = np.transpose(d_img, (2, 0, 1))
+        img_name = self.df.img_name[idx]
+
+        sample = {"d_img_org": d_img, "img_name": img_name}
+        if self.transform:
+            sample = self.transform(sample)
+
+        return sample
+
+
+class MyDataset_640_test(torch.utils.data.Dataset):
+    def __init__(self, csv_file, transform=None):
+        self.df = pd.read_csv(csv_file)
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        d_img = cv2.imread("../../data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
+        d_img = cv2.resize(d_img, (640, 640), interpolation=cv2.INTER_CUBIC)
         d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
         d_img = np.array(d_img).astype("float32") / 255
         d_img = np.transpose(d_img, (2, 0, 1))
@@ -354,6 +426,499 @@ class MyDataset_384(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         d_img = cv2.imread("../../data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
         d_img = cv2.resize(d_img, (384, 384), interpolation=cv2.INTER_CUBIC)
+        d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
+        d_img = np.array(d_img).astype("float32") / 255
+        d_img = np.transpose(d_img, (2, 0, 1))
+        score = self.score_list[idx]
+        # score = np.array(self.df.mos[idx])
+
+        sample = {"d_img_org": d_img, "score": score}
+
+        if self.transform:
+            sample = self.transform(sample)
+        return sample
+
+
+class MyDataset_448(torch.utils.data.Dataset):
+    def __init__(self, csv_file, transform=None):
+        self.df = pd.read_csv(csv_file)
+        self.transform = transform
+        score = self.df.mos.to_numpy()
+        score = self.normalization(score)
+        self.score_list = list(score.astype("float").reshape(-1, 1))
+
+    def __len__(self):
+        return len(self.df)
+
+    def normalization(self, data):
+        return data / 10
+
+    def __getitem__(self, idx):
+        d_img = cv2.imread("../../data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
+        d_img = cv2.resize(d_img, (448, 448), interpolation=cv2.INTER_CUBIC)
+        d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
+        d_img = np.array(d_img).astype("float32") / 255
+        d_img = np.transpose(d_img, (2, 0, 1))
+        score = self.score_list[idx]
+        # score = np.array(self.df.mos[idx])
+
+        sample = {"d_img_org": d_img, "score": score}
+
+        if self.transform:
+            sample = self.transform(sample)
+        return sample
+
+
+class MyDataset_640(torch.utils.data.Dataset):
+    def __init__(self, csv_file, transform=None):
+        self.df = pd.read_csv(csv_file)
+        self.transform = transform
+        score = self.df.mos.to_numpy()
+        score = self.normalization(score)
+        self.score_list = list(score.astype("float").reshape(-1, 1))
+
+    def __len__(self):
+        return len(self.df)
+
+    def normalization(self, data):
+        return data / 10
+
+    def __getitem__(self, idx):
+        d_img = cv2.imread("../../data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
+        d_img = cv2.resize(d_img, (640, 640), interpolation=cv2.INTER_CUBIC)
+        d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
+        d_img = np.array(d_img).astype("float32") / 255
+        d_img = np.transpose(d_img, (2, 0, 1))
+        score = self.score_list[idx]
+        # score = np.array(self.df.mos[idx])
+
+        sample = {"d_img_org": d_img, "score": score}
+
+        if self.transform:
+            sample = self.transform(sample)
+        return sample
+
+
+class MyDataset_640_aug(torch.utils.data.Dataset):
+    def __init__(self, csv_file, types):
+        self.df = pd.read_csv(csv_file)
+        if "mos" in self.df.columns:
+            score = self.df.mos.to_numpy()
+            score = self.normalization(score)
+            self.score_list = list(score.astype("float").reshape(-1, 1))
+        else:
+            self.score_list = False
+        self.types = types
+        self.aug = self.make_aug(types)
+
+    def __len__(self):
+        return len(self.df)
+
+    def normalization(self, data):
+        return data / 10
+
+    def make_aug(self, type):
+        if type == "train":
+            scales = [640]
+
+            aug = A.Compose(
+                [
+                    A.HorizontalFlip(),
+                    A.augmentations.geometric.resize.LongestMaxSize(max_size=scales),
+                    A.PadIfNeeded(640, 640, border_mode=2),
+                    A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+                    ToTensorV2(),
+                ]
+            )
+
+            return aug
+
+        else:
+            scales = [640]
+
+            aug = A.Compose(
+                [
+                    A.augmentations.geometric.resize.LongestMaxSize(max_size=scales),
+                    A.PadIfNeeded(640, 640, border_mode=2),
+                    A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+                    ToTensorV2(),
+                ]
+            )
+            return aug
+
+    def __getitem__(self, idx):
+        d_img = Image.open("../../data" + self.df.img_path[idx][1:])
+        d_img = d_img.convert("RGB")
+        if self.score_list:
+            score = self.score_list[idx].astype(dtype=np.float32)
+        else:
+            score = -1.0
+        d_img = self.aug(image=np.array(d_img))["image"]
+
+        if self.types != "test":
+            sample = {"d_img_org": d_img, "score": score}
+        else:
+            img_name = self.df.img_name[idx]
+            sample = {"d_img_org": d_img, "img_name": img_name}
+        return sample
+
+
+class MyDataset_640_crop_test(torch.utils.data.Dataset):
+    def __init__(self, csv_file, types):
+        self.df = pd.read_csv(csv_file)
+        if "mos" in self.df.columns:
+            score = self.df.mos.to_numpy()
+            score = self.normalization(score)
+            self.score_list = list(score.astype("float").reshape(-1, 1))
+        else:
+            self.score_list = False
+        self.types = types
+        self.small_aug = self.make_aug(small=True)
+        self.crop_aug = self.make_aug(small=False)
+
+    def __len__(self):
+        return len(self.df)
+
+    def normalization(self, data):
+        return data / 10
+
+    def make_aug(self, small):
+        if small:
+            aug = A.Compose(
+                [
+                    A.Resize(640, 640),
+                    A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+                    ToTensorV2(),
+                ]
+            )
+            return aug
+        else:
+            aug = A.Compose(
+                [
+                    A.RandomCrop(640, 640),
+                    A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+                    ToTensorV2(),
+                ]
+            )
+            return aug
+
+    def __getitem__(self, idx):
+        d_img = Image.open("../../data" + self.df.img_path[idx][1:])
+        d_img = d_img.convert("RGB")
+        if self.score_list:
+            score = self.score_list[idx].astype(dtype=np.float32)
+        else:
+            score = -1.0
+        h, w = d_img.size
+        d_img_list = []
+        if h < 640 or w < 640:
+            for i in range(20):
+                d_img_list.append(self.small_aug(image=np.array(d_img))["image"])
+        else:
+            for i in range(20):
+                d_img_list.append(self.crop_aug(image=np.array(d_img))["image"])
+        d_img = torch.stack(d_img_list, dim=0)
+        if self.types != "test":
+            sample = {"d_img_org": d_img, "score": score}
+        else:
+            img_name = self.df.img_name[idx]
+            sample = {"d_img_org": d_img, "img_name": img_name}
+        return sample
+
+
+class MyDataset_384_crop(torch.utils.data.Dataset):
+    def __init__(self, csv_file, types):
+        self.df = pd.read_csv(csv_file)
+        if "mos" in self.df.columns:
+            score = self.df.mos.to_numpy()
+            score = self.normalization(score)
+            self.score_list = list(score.astype("float").reshape(-1, 1))
+        else:
+            self.score_list = False
+        self.types = types
+        self.aug = self.make_aug(types)
+
+    def __len__(self):
+        return len(self.df)
+
+    def normalization(self, data):
+        return data / 10
+
+    def make_aug(self, type):
+        if type == "train":
+            scales = [384]
+
+            aug = A.Compose(
+                [
+                    A.HorizontalFlip(),
+                    A.PadIfNeeded(384, 384, border_mode=2),
+                    A.RandomCrop(384, 384),
+                    A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+                    ToTensorV2(),
+                ]
+            )
+
+            return aug
+
+        else:
+            scales = [384]
+
+            aug = A.Compose(
+                [
+                    A.PadIfNeeded(384, 384, border_mode=2),
+                    A.RandomCrop(384, 384),
+                    A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+                    ToTensorV2(),
+                ]
+            )
+            return aug
+
+    def __getitem__(self, idx):
+        d_img = Image.open("../../data" + self.df.img_path[idx][1:])
+        d_img = d_img.convert("RGB")
+        if self.score_list:
+            score = self.score_list[idx].astype(dtype=np.float32)
+        else:
+            score = -1.0
+
+        d_img_list = []
+
+        if self.types == "train" or self.types == "val":
+            for i in range(5):
+                d_img_list.append(self.aug(image=np.array(d_img))["image"])
+
+        else:
+            for i in range(20):
+                d_img_list.append(self.aug(image=np.array(d_img))["image"])
+
+        d_img = torch.stack(d_img_list, dim=0)
+        if self.types != "test":
+            sample = {"d_img_org": d_img, "score": score}
+        else:
+            img_name = self.df.img_name[idx]
+            sample = {"d_img_org": d_img, "img_name": img_name}
+        return sample
+
+
+class MyDataset_384_aug(torch.utils.data.Dataset):
+    def __init__(self, csv_file, types):
+        self.df = pd.read_csv(csv_file)
+        if "mos" in self.df.columns:
+            score = self.df.mos.to_numpy()
+            score = self.normalization(score)
+            self.score_list = list(score.astype("float").reshape(-1, 1))
+        else:
+            self.score_list = False
+        self.types = types
+        self.aug = self.make_aug(types)
+
+    def __len__(self):
+        return len(self.df)
+
+    def normalization(self, data):
+        return data / 10
+
+    def make_aug(self, type):
+        if type == "train":
+            scales = [384]
+
+            aug = A.Compose(
+                [
+                    A.HorizontalFlip(),
+                    A.augmentations.geometric.resize.LongestMaxSize(max_size=scales),
+                    A.PadIfNeeded(384, 384, border_mode=2),
+                    A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+                    ToTensorV2(),
+                ]
+            )
+
+            return aug
+
+        else:
+            scales = [384]
+
+            aug = A.Compose(
+                [
+                    A.augmentations.geometric.resize.LongestMaxSize(max_size=scales),
+                    A.PadIfNeeded(384, 384, border_mode=2),
+                    A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+                    ToTensorV2(),
+                ]
+            )
+            return aug
+
+    def __getitem__(self, idx):
+        d_img = Image.open("../../data" + self.df.img_path[idx][1:])
+        d_img = d_img.convert("RGB")
+        if self.score_list:
+            score = self.score_list[idx].astype(dtype=np.float32)
+        else:
+            score = -1.0
+        d_img = self.aug(image=np.array(d_img))["image"]
+
+        if self.types != "test":
+            sample = {"d_img_org": d_img, "score": score}
+        else:
+            img_name = self.df.img_name[idx]
+            sample = {"d_img_org": d_img, "img_name": img_name}
+        return sample
+
+
+class MyDataset_224_aug(torch.utils.data.Dataset):
+    def __init__(self, csv_file, types):
+        self.df = pd.read_csv(csv_file)
+        if "mos" in self.df.columns:
+            score = self.df.mos.to_numpy()
+            score = self.normalization(score)
+            self.score_list = list(score.astype("float").reshape(-1, 1))
+        else:
+            self.score_list = False
+        self.types = types
+        self.small_aug = self.make_aug(types, small=True)
+        self.crop_aug = self.make_aug(types, small=False)
+
+    def __len__(self):
+        return len(self.df)
+
+    def normalization(self, data):
+        return data / 10
+
+    def make_aug(self, type, small):
+        if type == "train":
+            if small:
+                aug = A.Compose(
+                    [
+                        A.HorizontalFlip(),
+                        A.Resize(224, 224),
+                        A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+                        ToTensorV2(),
+                    ]
+                )
+
+                return aug
+            else:
+                aug = A.Compose(
+                    [
+                        A.HorizontalFlip(),
+                        A.RandomCrop(224, 224),
+                        A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+                        ToTensorV2(),
+                    ]
+                )
+
+                return aug
+
+        else:
+            if small:
+                aug = A.Compose(
+                    [
+                        A.Resize(224, 224),
+                        A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+                        ToTensorV2(),
+                    ]
+                )
+
+                return aug
+            else:
+                aug = A.Compose(
+                    [
+                        A.RandomCrop(224, 224),
+                        A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+                        ToTensorV2(),
+                    ]
+                )
+
+                return aug
+
+    def __getitem__(self, idx):
+        d_img = Image.open("../../data" + self.df.img_path[idx][1:])
+        d_img = d_img.convert("RGB")
+        if self.score_list:
+            score = self.score_list[idx].astype(dtype=np.float32)
+        else:
+            score = -1.0
+        h, w = d_img.size
+
+        d_img_list = []
+
+        if h < 224 or w < 224:
+            if self.types == "train":
+                d_img = self.small_aug(image=np.array(d_img))["image"]
+            else:
+                for i in range(20):
+                    d_img_list.append(self.small_aug(image=np.array(d_img))["image"])
+        else:
+            if self.types == "train":
+                d_img = self.crop_aug(image=np.array(d_img))["image"]
+            else:
+                for i in range(20):
+                    d_img_list.append(self.crop_aug(image=np.array(d_img))["image"])
+
+        if self.types != "train":
+            d_img = torch.stack(d_img_list, dim=0)
+
+        if self.types != "test":
+            sample = {"d_img_org": d_img, "score": score}
+        else:
+            img_name = self.df.img_name[idx]
+            sample = {"d_img_org": d_img, "img_name": img_name}
+        return sample
+
+
+class MyDataset_384_sampling(torch.utils.data.Dataset):
+    def __init__(self, csv_file, transform=None):
+        self.df = pd.read_csv(csv_file)
+        e99 = self.df[self.df["weight"] == 1e99]
+        self.df.loc[self.df["weight"] == 1e99, "weight"] = 0.0
+        self.df = self.df.sample(n=20000 - 2898, weights="weight")
+        self.df = pd.concat([self.df, e99])
+        self.df.reset_index(inplace=True)
+        self.df = self.df.drop("index", axis="columns")
+
+        self.transform = transform
+        score = self.df.mos.to_numpy()
+        score = self.normalization(score)
+        self.score_list = list(score.astype("float").reshape(-1, 1))
+
+    def __len__(self):
+        return len(self.df)
+
+    def normalization(self, data):
+        return data / 10
+
+    def __getitem__(self, idx):
+        d_img = cv2.imread("../../data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
+        d_img = cv2.resize(d_img, (384, 384), interpolation=cv2.INTER_CUBIC)
+        d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
+        d_img = np.array(d_img).astype("float32") / 255
+        d_img = np.transpose(d_img, (2, 0, 1))
+        score = self.score_list[idx]
+        # score = np.array(self.df.mos[idx])
+
+        sample = {"d_img_org": d_img, "score": score}
+
+        if self.transform:
+            sample = self.transform(sample)
+        return sample
+
+
+class MyDataset_256(torch.utils.data.Dataset):
+    def __init__(self, csv_file, transform=None):
+        self.df = pd.read_csv(csv_file)
+        self.transform = transform
+        score = self.df.mos.to_numpy()
+        score = self.normalization(score)
+        self.score_list = list(score.astype("float").reshape(-1, 1))
+
+    def __len__(self):
+        return len(self.df)
+
+    def normalization(self, data):
+        return data / 10
+
+    def __getitem__(self, idx):
+        d_img = cv2.imread("../../data" + self.df.img_path[idx][1:], cv2.IMREAD_COLOR)
+        d_img = cv2.resize(d_img, (256, 256), interpolation=cv2.INTER_CUBIC)
         d_img = cv2.cvtColor(d_img, cv2.COLOR_BGR2RGB)
         d_img = np.array(d_img).astype("float32") / 255
         d_img = np.transpose(d_img, (2, 0, 1))
@@ -644,3 +1209,12 @@ class MyDataset_maxvit_test(torch.utils.data.Dataset):
         img_name = self.df.img_name[idx]
         sample = {"d_img_org": d_img, "img_name": img_name}
         return sample
+
+
+if __name__ == "__main__":
+    a = MyDataset_384_sampling(
+        "/root/dacon/data/train_only_mos/train_df_weight_fold1.csv", transform=None
+    )
+    b = MyDataset_384_sampling(
+        "/root/dacon/data/train_only_mos/train_df_weight_fold1.csv", transform=None
+    )
