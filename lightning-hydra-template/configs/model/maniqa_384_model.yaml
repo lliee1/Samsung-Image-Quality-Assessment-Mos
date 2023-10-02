@@ -29,6 +29,6 @@ net:
   num_tab: 2
   scale: 0.8
 
-
+name: 'hello'
 # compile model for faster training with pytorch 2.0
 compile: false

@@ -6,6 +6,7 @@ from torchmetrics import MaxMetric, MeanMetric, SumMetric
 import numpy as np
 from scipy.stats import spearmanr, pearsonr
 import pandas as pd
+import os
 
 
 class Maniqa_384Module(LightningModule):
@@ -47,6 +48,7 @@ class Maniqa_384Module(LightningModule):
         optimizer: torch.optim.Optimizer,
         scheduler: torch.optim.lr_scheduler,
         compile: bool,
+        name: str,
     ) -> None:
         """Initialize a `MNISTLitModule`.
 
@@ -59,7 +61,7 @@ class Maniqa_384Module(LightningModule):
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
         self.save_hyperparameters(logger=False)
-
+        self.name = name
         self.net = net
 
         # loss function
@@ -245,8 +247,9 @@ class Maniqa_384Module(LightningModule):
         submit_df = pd.DataFrame(self.image_name_ls, columns=["img_name"])
         submit_df.insert(1, "mos", self.mos_ls)
         submit_df.insert(2, "comments", self.comments_ls)
+        os.makedirs("../../result_csv", exist_ok=True)
         submit_df.to_csv(
-            "/root/dacon/data/Autogluon_csv/test_fold4_0925.csv",
+            "../../result_csv/" + self.name + ".csv",
             mode="w",
             index=False,
         )
