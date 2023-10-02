@@ -1,0 +1,8 @@
+_target_: src.data.maniqa_448_datamodule.Maniqa_448DataModule
+data_dir: ${paths.data_dir}
+batch_size: 32
+num_workers: 4
+pin_memory: true
+train_csv_file: ${paths.data_dir}/train_only_mos/train_df_fold0.csv
+valid_csv_file: ${paths.data_dir}/train_only_mos/val_df_fold0.csv
+test_csv_file: ${paths.data_dir}/drop_train.csv

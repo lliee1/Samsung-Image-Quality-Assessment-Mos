@@ -3,16 +3,10 @@ from typing import Any, Dict, Optional, Tuple
 import torch
 from lightning import LightningDataModule
 from torch.utils.data import ConcatDataset, DataLoader, Dataset, random_split
-from torchvision.datasets import MNIST
 from torchvision.transforms import transforms
 from MANIQA.data.koniq10k.koniq10k import (
-    MyDataset,
-    MyDataset_test,
-    MyDataset_loss_check,
-    MyDataset_with_blur,
     MyDataset_384,
     MyDataset_384_test,
-    MyDataset_with_blur_384,
 )
 from MANIQA.utils.process import (
     RandCrop,
@@ -31,7 +25,7 @@ class Maniqa_384DataModule(LightningDataModule):
     It is a subset of a larger set available from NIST. The digits have been size-normalized and centered in a
     fixed-size image. The original black and white images from NIST were size normalized to fit in a 20x20 pixel box
     while preserving their aspect ratio. The resulting images contain grey levels as a result of the anti-aliasing
-    technique used by the normalization algorithm. the images were centered in a 28x28 image by computing the center of
+    technique used by the normalization algorithm. the images were centered sin a 28x28 image by computing the center of
     mass of the pixels, and translating the image so as to position this point at the center of the 28x28 field.
 
     A `LightningDataModule` implements 7 key methods:
@@ -108,12 +102,6 @@ class Maniqa_384DataModule(LightningDataModule):
             [Normalize_test(0.5, 0.5), ToTensor_test()]
         )
 
-        # self.data_train: Optional[Dataset] = MyDataset(
-        #     csv_file=train_csv_file, transform=self.train_transforms
-        # )
-        # self.data_val: Optional[Dataset] = MyDataset(
-        #     csv_file=valid_csv_file, transform=self.val_transforms
-        # )
         self.data_train: Optional[Dataset] = MyDataset_384(
             csv_file=train_csv_file, transform=self.train_transforms
         )
@@ -123,9 +111,6 @@ class Maniqa_384DataModule(LightningDataModule):
         self.data_test: Optional[Dataset] = MyDataset_384_test(
             csv_file=test_csv_file, transform=self.test_transforms
         )
-        # self.data_test: Optional[Dataset] = MyDataset_loss_check(
-        #     csv_file=valid_csv_file, transform=self.val_transforms
-        # )
 
     @property
     def num_classes(self) -> int:

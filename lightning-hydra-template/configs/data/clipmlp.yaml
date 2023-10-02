@@ -1,8 +1,0 @@
-_target_: src.data.clipmlp_datamodule.clipmlpDataModule
-data_dir: ${paths.data_dir}
-batch_size: 32
-num_workers: 8
-pin_memory: true
-train_csv_file: ${paths.data_dir}/train_only_mos/train_df_4420.csv
-valid_csv_file: ${paths.data_dir}/train_only_mos/val_df_4420.csv
-test_csv_file: ${paths.data_dir}/test.csv
