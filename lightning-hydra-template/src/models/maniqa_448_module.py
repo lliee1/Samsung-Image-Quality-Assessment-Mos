@@ -8,7 +8,7 @@ from scipy.stats import spearmanr, pearsonr
 import pandas as pd
 
 
-class Maniqa_384Module(LightningModule):
+class Maniqa_448Module(LightningModule):
     """Example of a `LightningModule` for MNIST classification.
 
     A `LightningModule` implements 8 key methods:
@@ -246,7 +246,7 @@ class Maniqa_384Module(LightningModule):
         submit_df.insert(1, "mos", self.mos_ls)
         submit_df.insert(2, "comments", self.comments_ls)
         submit_df.to_csv(
-            "/root/dacon/data/Autogluon_csv/test_fold4_0925.csv",
+            "/root/dacon/data/Autogluon_csv/448_autogluon_fold4_0926.csv",
             mode="w",
             index=False,
         )
