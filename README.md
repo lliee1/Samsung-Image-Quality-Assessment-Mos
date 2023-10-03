@@ -31,7 +31,26 @@ Output : 화질 평가 점수(float)
 평가 산식 : (PLCC + SLCC) / 2
 
 ---
+### Set Environment
+1. Download Dockerfile
 
+
+2. build image
+~~~md
+docker build -t my_image:1.0.0 .
+
+(you can change name and tag)
+~~~
+
+3. docker run
+~~~md
+docker run -it --name {name_you_want} --gpus all --ipc=host my_image:1.0.0 /bin/bash
+~~~
+
+
+
+
+---
 ### Code reproduction
 
 1. [raw_data](https://dacon.io/competitions/official/236134/data)를 [data folder](data)에 저장 
