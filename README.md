@@ -28,7 +28,7 @@
 Input : 사진 \
 Output : 화질 평가 점수(float)
 
-평가 산식 : (PLCC + SLCC) / 2
+평가 산식 : $(PLCC + SLCC)\over2$
 
 ---
 ### Set Environment
