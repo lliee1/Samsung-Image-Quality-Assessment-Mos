@@ -1,6 +1,6 @@
 _target_: src.data.maniqa_640_datamodule.Maniqa_640DataModule
 data_dir: ${paths.data_dir}
-batch_size: 1
+batch_size: 16
 num_workers: 4
 pin_memory: true
 train_csv_file: ${paths.data_dir}/train_only_mos/train_df_fold0.csv
