@@ -67,3 +67,5 @@ python eval.py ckpt_path=../weight/{your_weight_file} model=maniqa_{model_size}_
 | Private | 0.57225 | 5 |
 ---
 
+
+### [report](Dacon_challenge.pdf)
