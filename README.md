@@ -47,11 +47,29 @@ test_image_path : dacon/data/test
 cd dacon/lightning-hydra-template/src
 python train.py model=maniqa_{model_size}_model data=maniqa_{model_size}_data trainer.devices={num_your_device} trainer=ddp
 
-model_size = (384,448,640)
+{model_size} = 384,448,640
+
 ~~~
 
+~~~md
+# Another fold for training
+default fold is fold0. (There are fold0,1,2,3,4)
 
-you must insert your weight.ckpt into dacon/lightning-hydra-template/weight
+if you want another fold for train,
+you should change train,val_csv_file directory at 
+
+'dacon/lightning-hydra-template/configs/data/maniqa_{model_size}_data.yaml' 
+{model_size} = 384, 448, 640
+
+Ex) fold1
+train_csv_file: ${paths.data_dir}/train_only_mos/train_df_fold1.csv
+valid_csv_file: ${paths.data_dir}/train_only_mos/val_df_fold1.csv 
+
+~~~
+
+---
+### Insert your weight.ckpt into dacon/lightning-hydra-template/weight
+
 ~~~md
 # Model Inference
 cd dacon/lightning-hydra-template/src
