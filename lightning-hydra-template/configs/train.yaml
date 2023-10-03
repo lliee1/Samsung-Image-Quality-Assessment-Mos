@@ -7,7 +7,7 @@ defaults:
   - data: maniqa_640_data
   - model: maniqa_640_model
   - callbacks: default
-  - logger: wandb # set logger here or use command line (e.g. `python train.py logger=tensorboard`)
+  - logger: # set logger here or use command line (e.g. `python train.py logger=tensorboard`)
   - trainer: ddp
   - paths: default
   - extras: default

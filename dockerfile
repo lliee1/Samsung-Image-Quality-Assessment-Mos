@@ -9,7 +9,7 @@ RUN pip install --upgrade pip
 
 
 WORKDIR /root
-RUN git clone https://github.com/lliee1/dacon.git
+COPY . /root/dacon
 WORKDIR /root/dacon/lightning-hydra-template
 
 # requirements
