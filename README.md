@@ -32,8 +32,7 @@ Output : 화질 평가 점수(float)
 
 ---
 ### Set Environment
-1. Download Dockerfile
-
+1. [Click Dockerfile](dockerfile)
 
 2. build image
 ~~~md
