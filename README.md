@@ -3,7 +3,7 @@
 - 카메라 영상 화질 정량 평가 및 자연어 정성 평가를 동시 생성하는 알고리즘 개발
 
 - 종합 등수 : 6th
-- [화질 정성 평가 code](https://github.com/GeonHyeock/Samsung-Image-Quality-Assessment-Captioning)
+- coworker : [화질 정성 평가 code](https://github.com/GeonHyeock/Samsung-Image-Quality-Assessment-Captioning)
 
 ## Member🔥
 | [박주용](https://github.com/lliee1)| [허건혁](https://github.com/GeonHyeock) |
