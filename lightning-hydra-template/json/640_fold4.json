@@ -1,0 +1,266 @@
+{
+    "data": {
+        "desc": null,
+        "value": {
+            "_target_": "src.data.maniqa_640_datamodule.Maniqa_640DataModule",
+            "data_dir": "${paths.data_dir}",
+            "batch_size": 16,
+            "pin_memory": true,
+            "num_workers": 4,
+            "test_csv_file": "${paths.data_dir}/test.csv",
+            "train_csv_file": "${paths.data_dir}/train_only_mos/train_df_fold4.csv",
+            "valid_csv_file": "${paths.data_dir}/train_only_mos/val_df_fold4.csv"
+        }
+    },
+    "seed": {
+        "desc": null,
+        "value": 4420
+    },
+    "tags": {
+        "desc": null,
+        "value": [
+            "dev"
+        ]
+    },
+    "model": {
+        "desc": null,
+        "value": {
+            "net": {
+                "scale": 0.8,
+                "depths": [
+                    2,
+                    2
+                ],
+                "dim_mlp": 768,
+                "num_tab": 2,
+                "_target_": "MANIQA.models.maniqa.MANIQA_640",
+                "img_size": 640,
+                "embed_dim": 768,
+                "num_heads": [
+                    4,
+                    4
+                ],
+                "patch_size": 16,
+                "num_outputs": 1,
+                "window_size": 4
+            },
+            "compile": false,
+            "_target_": "src.models.maniqa_640_module.Maniqa_640Module",
+            "optimizer": {
+                "lr": 0.00001,
+                "_target_": "torch.optim.Adam",
+                "_partial_": true,
+                "weight_decay": 0.00001
+            },
+            "scheduler": {
+                "gamma": 0.9,
+                "max_lr": 0.00001,
+                "min_lr": 1e-10,
+                "_target_": "cosine_annealing_warmup.CosineAnnealingWarmupRestarts",
+                "_partial_": true,
+                "cycle_mult": 1,
+                "warmup_steps": 200,
+                "first_cycle_steps": 800
+            }
+        },
+        "params/non_trainable": {
+            "desc": null,
+            "value": 0
+        },
+        "params/total": {
+            "desc": null,
+            "value": 159948170
+        },
+        "params/trainable": {
+            "desc": null,
+            "value": 159948170
+        }
+    },
+    "_wandb": {
+        "desc": null,
+        "value": {
+            "m": [
+                {
+                    "1": "trainer/global_step",
+                    "6": [
+                        3
+                    ]
+                },
+                {
+                    "1": "Learning rate",
+                    "5": 1,
+                    "6": [
+                        1
+                    ]
+                },
+                {
+                    "1": "train/loss",
+                    "5": 1,
+                    "6": [
+                        1
+                    ]
+                },
+                {
+                    "1": "epoch",
+                    "5": 1,
+                    "6": [
+                        1
+                    ]
+                },
+                {
+                    "1": "val/loss",
+                    "5": 1,
+                    "6": [
+                        1
+                    ]
+                },
+                {
+                    "1": "val/metric",
+                    "5": 1,
+                    "6": [
+                        1
+                    ]
+                },
+                {
+                    "1": "train/PLCC",
+                    "5": 1,
+                    "6": [
+                        1
+                    ]
+                },
+                {
+                    "1": "train/SRCC",
+                    "5": 1,
+                    "6": [
+                        1
+                    ]
+                }
+            ],
+            "t": {
+                "1": [
+                    1,
+                    5,
+                    41,
+                    49,
+                    50,
+                    53,
+                    55,
+                    63,
+                    80
+                ],
+                "2": [
+                    1,
+                    5,
+                    41,
+                    49,
+                    50,
+                    53,
+                    55,
+                    63,
+                    80
+                ],
+                "3": [
+                    2,
+                    7,
+                    23
+                ],
+                "4": "3.8.17",
+                "5": "0.15.10",
+                "8": [
+                    5
+                ]
+            },
+            "framework": "torch",
+            "start_time": 1695998646.528282,
+            "cli_version": "0.15.10",
+            "is_jupyter_run": false,
+            "python_version": "3.8.17",
+            "is_kaggle_kernel": false
+        }
+    },
+    "extras": {
+        "desc": null,
+        "value": {
+            "enforce_tags": true,
+            "print_config": true,
+            "ignore_warnings": false
+        }
+    },
+    "trainer": {
+        "desc": null,
+        "value": {
+            "devices": 4,
+            "_target_": "lightning.pytorch.trainer.Trainer",
+            "strategy": "ddp_find_unused_parameters_true",
+            "num_nodes": 1,
+            "max_epochs": 200,
+            "min_epochs": 1,
+            "accelerator": "gpu",
+            "deterministic": false,
+            "sync_batchnorm": true,
+            "default_root_dir": "${paths.output_dir}",
+            "check_val_every_n_epoch": 1
+        }
+    },
+    "callbacks": {
+        "desc": null,
+        "value": {
+            "model_summary": {
+                "_target_": "lightning.pytorch.callbacks.RichModelSummary",
+                "max_depth": -1
+            },
+            "early_stopping": {
+                "mode": "max",
+                "strict": true,
+                "monitor": "val/metric",
+                "verbose": false,
+                "_target_": "lightning.pytorch.callbacks.EarlyStopping",
+                "patience": 15,
+                "min_delta": 0,
+                "check_finite": true,
+                "stopping_threshold": null,
+                "divergence_threshold": null,
+                "check_on_train_epoch_end": null
+            },
+            "model_checkpoint": {
+                "mode": "max",
+                "dirpath": "${paths.output_dir}/checkpoints",
+                "monitor": "val/metric",
+                "verbose": false,
+                "_target_": "lightning.pytorch.callbacks.ModelCheckpoint",
+                "filename": "epoch_{epoch:03d}",
+                "save_last": true,
+                "save_top_k": 1,
+                "every_n_epochs": null,
+                "save_weights_only": false,
+                "every_n_train_steps": null,
+                "train_time_interval": null,
+                "auto_insert_metric_name": false,
+                "save_on_train_epoch_end": null
+            },
+            "rich_progress_bar": {
+                "_target_": "lightning.pytorch.callbacks.RichProgressBar"
+            }
+        }
+    },
+    "ckpt_path": {
+        "desc": null,
+        "value": null
+    },
+    "task_name": {
+        "desc": null,
+        "value": "train"
+    },
+    "model/params/total": {
+        "desc": null,
+        "value": 159948170
+    },
+    "model/params/trainable": {
+        "desc": null,
+        "value": 159948170
+    },
+    "model/params/non_trainable": {
+        "desc": null,
+        "value": 0
+    }
+}
