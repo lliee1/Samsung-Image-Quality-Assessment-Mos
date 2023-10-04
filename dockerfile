@@ -1,10 +1,13 @@
-FROM ufoym/deepo:all-py38-cu113
+FROM nvidia/cuda:11.3.1-cudnn8-runtime-ubuntu20.04
 
 USER root
 
-RUN apt-get update -y
-RUN apt-get upgrade -y
-RUN apt-get -y install libgl1-mesa-glx
+RUN apt-get update -y \
+&& apt-get upgrade -y \
+&& apt-get install python3-pip -y \
+&& apt install python3.8 -y && apt-get -y install libgl1-mesa-glx \
+&& apt install git -y && apt-get install libglib2.0-0 -y
+ENV TZ="Asia/Seoul"
 RUN pip install --upgrade pip
 
 
@@ -14,5 +17,6 @@ WORKDIR /root/dacon/lightning-hydra-template
 
 # requirements
 RUN pip install -r requirements.txt
+
 # warmup
 RUN pip install 'git+https://github.com/katsura-jp/pytorch-cosine-annealing-with-warmup'
