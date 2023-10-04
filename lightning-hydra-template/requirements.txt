@@ -25,3 +25,4 @@ pytest          # tests
 opencv-python
 timm
 einops
+pandas
