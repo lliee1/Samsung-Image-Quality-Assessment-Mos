@@ -2,12 +2,16 @@ FROM nvidia/cuda:11.3.1-cudnn8-runtime-ubuntu20.04
 
 USER root
 
-RUN apt-get update -y \
-&& apt-get upgrade -y \
-&& apt-get install python3-pip -y \
-&& apt install python3.8 -y && apt-get -y install libgl1-mesa-glx \
-&& apt install git -y && apt-get install libglib2.0-0 -y
+RUN apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get install python3-pip -y && \
+    apt install python3.8 -y && apt-get -y install libgl1-mesa-glx
+
+ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ="Asia/Seoul"
+RUN apt install git -y && apt-get install libglib2.0-0 -y
+
+
 RUN pip install --upgrade pip
 
 
