@@ -104,13 +104,3 @@ python eval.py ckpt_path=../weight/640_fold2.ckpt model=maniqa_448_model data=ma
 ~~~
 
 ---
-
-### Score Ranking
-|Type|score|Rank|
-| :---: | :---: | :---: |
-| Public | 0.7874 | 6 |
-| Private | 0.57225 | 5 |
----
-
-
-### [report](Dacon_challenge_math_giveup.pdf)
