@@ -6,7 +6,7 @@ test_image_path : dacon/data/test
 ~~~
 
 ~~~md
-# Model Train
+# 2. Model Train
 
 # 경로 이동 (중요)
 cd dacon/lightning-hydra-template/src
@@ -75,7 +75,7 @@ valid_csv_file: ${paths.data_dir}/train_only_mos/val_df_fold4.csv
 # zip파일에 있는 15개의 weight를 dacon/lightning-hydra-template/weight 경로에 넣어주시면 하단의 명령어를 이용해 Inference 가능합니다.
 ~~~
 ~~~md
-# Model Inference
+# 3. Model Inference
 
 # 경로 이동 (중요)
 cd dacon/lightning-hydra-template/src
