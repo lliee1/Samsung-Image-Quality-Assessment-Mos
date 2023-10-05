@@ -126,9 +126,7 @@ python eval.py ckpt_path=../weight/640_fold2.ckpt model=maniqa_448_model data=ma
 # 위 예시를 활용해서 각 모델(384, 448, 640)에 fold0,1,2,3,4 weight를 사용하여 Inference를 진행하면,
 # 15개의 csv파일을 얻을 수 있습니다.
 
-# 수정해야함
-# ppt도 수정해야함 outlier 추가해서
-# csv파일은 dacon/result_csv에 저장되며, 최종 final.csv는 dacon/result_csv/15fold.py를 실행시키면 최종 mos 결과를 얻을 수 있습니다.
+# Inference csv 파일은 dacon/result_csv에 저장되며, 최종 csv인 final.csv는 dacon/result_csv/outlier.py를 실행시키면 얻을 수 있습니다.
 
 ~~~
 
