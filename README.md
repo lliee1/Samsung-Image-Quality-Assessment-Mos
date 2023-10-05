@@ -105,3 +105,6 @@ python eval.py ckpt_path=../weight/{your_weight_file} model=maniqa_{model_size}_
 
 
 ### [report](Dacon_challenge_math_giveup_final.pdf)
+
+
+### [코드 재현을 위한 상세 설명](data/README.md)
