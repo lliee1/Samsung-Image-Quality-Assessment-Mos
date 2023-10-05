@@ -24,3 +24,7 @@ RUN pip install -r requirements.txt
 
 # warmup
 RUN pip install 'git+https://github.com/katsura-jp/pytorch-cosine-annealing-with-warmup'
+
+
+# python3 to python
+RUN ln -s /usr/bin/python3 /usr/bin/python
