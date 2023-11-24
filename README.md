@@ -52,17 +52,17 @@ docker run -it --name {name_you_want} --gpus all --ipc=host my_image:1.0.0 /bin/
 ---
 ### Code reproduction
 
-1. [raw_data](https://dacon.io/competitions/official/236134/data)를 [data folder](data)에 저장 
+※ [raw_data](https://dacon.io/competitions/official/236134/data)를 [data folder](data)에 저장
 
 ~~~md
 # Data preprocessing
-train_image_path : dacon/data/train
-test_image_path : dacon/data/test
+train_image_path : /data/train
+test_image_path : /data/test
 ~~~
 
 ~~~md
 # Model Train
-cd dacon/lightning-hydra-template/src
+cd /lightning-hydra-template/src
 python train.py model=maniqa_{model_size}_model data=maniqa_{model_size}_data trainer.devices={num_your_device} trainer=ddp
 
 {model_size} = 384,448,640
@@ -76,7 +76,7 @@ default fold is fold0. (There are fold0,1,2,3,4)
 if you want another fold for train,
 you should change train,val_csv_file directory at 
 
-'dacon/lightning-hydra-template/configs/data/maniqa_{model_size}_data.yaml' 
+'/lightning-hydra-template/configs/data/maniqa_{model_size}_data.yaml' 
 {model_size} = 384, 448, 640
 
 Ex) fold1
@@ -86,11 +86,11 @@ valid_csv_file: ${paths.data_dir}/train_only_mos/val_df_fold1.csv
 ~~~
 
 ---
-### Insert your weight.ckpt into dacon/lightning-hydra-template/weight
+### Insert your weight.ckpt into /lightning-hydra-template/weight
 
 ~~~md
 # Model Inference
-cd dacon/lightning-hydra-template/src
+cd /lightning-hydra-template/src
 python eval.py ckpt_path=../weight/{your_weight_file} model=maniqa_{model_size}_model data=maniqa_{model_size}_data model.name={name_of_your_inference_csv_file}
 ~~~
 
